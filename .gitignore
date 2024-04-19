@@ -1,0 +1,6 @@
+/Flow_Analysis/dataset
+
+*.pcap
+*.csv
+*.parquet
+node_modules/
