@@ -4,3 +4,7 @@
 *.csv
 *.parquet
 node_modules/
+*.zip
+/myenv
+/Dataset
+*.pkl
