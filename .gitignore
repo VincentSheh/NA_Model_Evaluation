@@ -5,6 +5,7 @@
 *.parquet
 node_modules/
 *.zip
+*.joblib
 /myenv
 /Dataset
 *.pkl
