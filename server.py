@@ -15,21 +15,6 @@ def decode_json(request):
   data = request.json
   return data
 def validated_req_schema(flow_data):
-  # pruned_features=['Init_Win_bytes_forward', 'Bwd Packets/s',
-  #      'Init_Win_bytes_backward', 'Flow Duration', 'Packet Length Std',
-  #      'PSH Flag Count', #TODO
-  #      'Fwd Packets/s', #TODO
-  #     #  'Destination Port', 
-  #     #  'min_seg_size_forward', #TODO
-  #      'Average Packet Size', 
-  #      'Total Length of Bwd Packets', 'Bwd Packet Length Min',
-  #      'Fwd IAT Min', #TODO
-  #      'Fwd Header Length', 'Total Backward Packets',
-  #      'Total Length of Fwd Packets', 
-  #      'Bwd Packet Length Mean',
-  #      'Bwd Header Length', #TODO
-  #     #  'Packet Length Mean', #TODO SIMILAR To Average Packet Size?
-  #      'Flow IAT Min']
   features = ['Src IP', 'Dst IP','Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts', 'TotLen Fwd Pkts',
        'TotLen Bwd Pkts', 'Fwd Pkt Len Max', 'Fwd Pkt Len Min',
        'Fwd Pkt Len Mean', 'Fwd Pkt Len Std', 'Bwd Pkt Len Max',
@@ -47,9 +32,7 @@ def validated_req_schema(flow_data):
        'Fwd Act Data Pkts', 'Fwd Seg Size Min', 'Active Mean',
        'Active Std', 'Active Max', 'Active Min', 'Idle Mean', 'Idle Std',
        'Idle Max', 'Idle Min']
-  #
-  # df['Destination Port'] = df['Destination Port'].astype(int)
-  # Select only the required columns
+
   df_pruned = flow_data[features]
       
   return df_pruned  
