@@ -1,17 +1,17 @@
 import numpy as np
-from flask import Flask, request, jsonify
 import pandas as pd
-from io import StringIO
 import joblib
 from sklearn.preprocessing import StandardScaler
 from deepod.models import PReNet
-from itertools import combinations
 import os
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_recall_curve, auc, roc_curve, recall_score, precision_score, f1_score, confusion_matrix
+from sklearn.metrics import precision_recall_curve, auc, roc_curve, recall_score, precision_score, f1_score, confusion_matrix, accuracy_score
 from xgboost import XGBClassifier
 from alipy import ToolBox
 from collections import Counter
+from io import StringIO
+from flask import Flask, request, jsonify
+
 
 features = ['Src IP', 'Dst IP','Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts', 'TotLen Fwd Pkts',
        'TotLen Bwd Pkts', 'Fwd Pkt Len Max', 'Fwd Pkt Len Min',
@@ -41,50 +41,54 @@ def clean_df(df):
     num = df._get_numeric_data()
     num[num < 0] = 0
 
-    # zero_variance_cols = []
-    # for col in df.columns:
-    #     if len(df[col].unique()) == 1:
-    #         zero_variance_cols.append(col)
-    # df.drop(zero_variance_cols, axis = 1, inplace = True)
-    # print('zero variance columns', zero_variance_cols, 'dropped')
-    # print('shape after removing zero variance columns:', df.shape)
-
-    df.replace([np.inf, -np.inf], np.nan, inplace = True)
+    df = df.replace([np.inf, -np.inf], np.nan, inplace=False)  # Replace inf/-inf with NaN
     print(df.isna().any(axis = 1).sum(), 'rows dropped')
-    df.dropna(inplace = True)
-    print('shape after removing nan:', df.shape)
-
+    df.dropna(inplace=True)
+    # print('shape after removing nan:', df.shape)
     # Drop duplicate rows
     df.drop_duplicates(inplace = True)
-    print('shape after dropping duplicates:', df.shape)
+    # print('shape after dropping duplicates:', df.shape) 
+    
+    df = df.replace([np.inf, -np.inf], np.nan)  # Replace inf/-inf with NaN
+    df = df.fillna(df.mean())       
+    
+    df.dropna(inplace=True)
+    df = df.select_dtypes(include=[np.number])
+    indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(axis=1)
+    df = df[indices_to_keep]
 
-    column_pairs = [(i, j) for i, j in combinations(df, 2) if df[i].equals(df[j])]
-    # ide_cols = []
-    # for column_pair in column_pairs:
-    #     ide_cols.append(column_pair[1])
-    # df.drop(ide_cols, axis = 1, inplace = True)
-    # print('columns which have identical values', column_pairs, 'dropped')
-    # print('shape after removing identical value columns:', df.shape)
+    for i in df.columns:
+        df = df[df[i] != "Infinity"]
+        df = df[df[i] != np.nan]
+        df = df[df[i] != np.inf]
+        df = df[df[i] != -np.inf]
+        df = df[df[i] != ",,"]
+        df = df[df[i] != ", ,"]
+        
+    # print(np.any(np.isnan(df)))
+    # print(np.any(np.isfinite(df)))    
+
     return df
 
 def sample_df(curr_df, anomaly_rate):
-    num_benign = len(curr_df.loc[curr_df['Label'] == "BENIGN"])
+    num_benign = len(curr_df.loc[curr_df['Label'] == 0])
     num_attack = len(curr_df) - num_benign
     ratio = num_attack / num_benign
     
     if ratio > anomaly_rate:
         sample = anomaly_rate * num_benign / num_attack
-        sampled_df = pd.concat([curr_df[curr_df['Label'] == 'BENIGN'], 
-                                curr_df[curr_df['Label'] != 'BENIGN'].sample(frac=sample, random_state=42)]) 
+        sampled_df = pd.concat([curr_df[curr_df['Label'] == 0], 
+                                curr_df[curr_df['Label'] != 0].sample(frac=sample, random_state=42)]) 
     else:
         
         sample = (1/anomaly_rate) * num_attack / num_benign
-        sampled_df = pd.concat([curr_df[curr_df['Label'] != 'BENIGN'], 
-                                curr_df[curr_df['Label'] == 'BENIGN'].sample(frac=sample, random_state=42)]) 
+        sampled_df = pd.concat([curr_df[curr_df['Label'] != 0], 
+                                curr_df[curr_df['Label'] == 0].sample(frac=sample, random_state=42)]) 
     
-    new_ratio = sampled_df.loc[sampled_df["Label"] == "BENIGN"].shape[0] / sampled_df.loc[sampled_df["Label"] != "BENIGN"].shape[0]
+    new_ratio = sampled_df.loc[sampled_df["Label"] == "0"].shape[0] / sampled_df.loc[sampled_df["Label"] != 0].shape[0]
     
     return sampled_df
+
 
 def read_csv(folder_names = ['dripper/', 'BENIGN/', 'bonesi/']):
     full_df = pd.DataFrame()
@@ -96,32 +100,42 @@ def read_csv(folder_names = ['dripper/', 'BENIGN/', 'bonesi/']):
         for csv_file_name in csv_file_names:
             complete_paths.append(os.path.join(dataset_csv_path+folder, csv_file_name))
         print(complete_paths)
-        df = pd.concat(map(pd.read_csv, complete_paths), 
-                                ignore_index = True)
+        df = pd.concat(map(pd.read_csv, complete_paths), ignore_index = True)
         if folder == 'training_data/gm/': #Avoid Dst IP and Src IP when loading from training folder
             df = df[features[2:]].copy()
         else:
             df = df[features].copy()
         print(folder[:-1])
         df["Label"] = folder[:-1]
-        df["Label"] = df["Label"].apply(lambda x: 0 if x == "BENIGN" else 1)
+        df["Label"] = df["Label"].apply(lambda x: 0 if (x == "BENIGN" or x == 0) else 1)
         full_df = pd.concat([full_df, df], axis=0, ignore_index=True)
     label = full_df["Label"]    
-    
-    cleaned_df = clean_df(full_df)
+    source_ip = full_df["Src IP"]
+    dst_ip = full_df["Dst IP"]
+    cleaned_df = full_df.drop(columns=["Label", "Src IP", "Dst IP"], inplace=False)
+    cleaned_df = clean_df(cleaned_df)
     # Drop String Columns
-    cleaned_df = cleaned_df[features]
     cleaned_df["Label"] = label
-    cleaned_df.to_csv("x.csv")
+    cleaned_df["Src IP"] = source_ip
+    cleaned_df["Dst IP"] = dst_ip
+    
     return cleaned_df
   
-  
 def validated_req_schema(flow_data):
-  df_pruned = flow_data[features]
-  return df_pruned  
-
-
-  
+    # Check if a file is part of the POST request
+    if 'file' not in request.files:
+        print("No file part")
+        return "No file part", 400
+    file = request.files['file']
+    if file.filename == '':
+        print('No selected file')
+        return "No selected file", 400
+    if file:
+        # Convert the file stream directly to a DataFrame
+        string_data = StringIO(file.read().decode('utf-8'))   
+        flow_df = pd.read_csv(string_data)     
+    df_pruned = flow_data[features]
+    return df_pruned  
 
 def get_optimal_threshold(precision, recall, thresholds):
     with np.errstate(divide='ignore', invalid='ignore'):
@@ -133,14 +147,13 @@ def get_optimal_threshold(precision, recall, thresholds):
   
 def eval_accuracy(clf, X_test, y_test):
     anomaly_scores = clf.decision_function(X_test.to_numpy())
-    print("AASDDAS",anomaly_scores)
     fpr, tpr, _ = roc_curve(y_test, anomaly_scores)
     precision, recall, thresholds = precision_recall_curve(y_test, anomaly_scores)
     opt_threshold = get_optimal_threshold(precision, recall, thresholds)
     pred = np.where(anomaly_scores > opt_threshold, 1,0)
     f1 = f1_score(y_test, pred)
     conf_matrix = confusion_matrix(y_test, pred)
-    print(f"F1 Score: {f1:.4f}")
+    print(f"F1 Score: {f1:.4f}, Accuracy: {accuracy_score(pred, y_test):.4f}")
     print(conf_matrix)
     return opt_threshold
 def get_avail_filename(folder,filename):
@@ -170,28 +183,33 @@ def load_data(train_folder,scaler=None):
     
     
 class Global_Model():
-  def __init__(self, train_folder = ['dripper/', 'BENIGN/', 'bonesi/', 'training_data/gm/']):
+  def __init__(self, train_folder = ['dripper/', 'BENIGN/', 'bonesi/'], new_data_folder = ["training_data/gm/"]):
     self.scaler = joblib.load('cic_scaler.joblib')
     self.train_folder = train_folder
-
+    self.new_train_folder = new_data_folder
     self.model, self.opt_threshold = self.load_model()
     
     
   def load_data(self,scaler=None):
     full_df = read_csv(self.train_folder)
+    new_train_df = read_csv(self.new_train_folder)
     # validated_df = validated_req_schema(full_df)
-    label = full_df["Label"].values
-    full_df.drop(columns=["Src IP", "Dst IP", "Label"], axis=1, inplace=True)
-    columns = full_df.columns
+    sampled_df = sample_df(full_df,0.05) # !Shouldn't Sample when loading from ./training_data/
+    print("Before Merging", sampled_df["Label"].value_counts())
+    sampled_df = pd.concat([sampled_df, new_train_df], ignore_index=True)
+    label = sampled_df["Label"].values
+    
+    print("After Merging", sampled_df["Label"].value_counts())
+    sampled_df.drop(columns=["Src IP", "Dst IP", "Label"], axis=1, inplace=True)
+    columns = sampled_df.columns
     if scaler != None:
-        normalized_data = scaler.transform(full_df)
+        normalized_data = scaler.transform(sampled_df)
         normalized_df = pd.DataFrame(normalized_data, columns = columns)
     else:
-        normalized_df = full_df.copy()
+        normalized_df = sampled_df.copy()
     X_train, X_test, y_train, y_test = train_test_split(normalized_df, label, shuffle=True, stratify=label,
                                                         test_size=0.2, random_state=4022)
     return X_train, X_test, y_train, y_test    
-    # TODO: New Data Handling - Append the data to the gm_training.csv
     
   def load_model(self): # Load the model through training since pytorch isn't supported
     model = PReNet
@@ -210,33 +228,36 @@ class Global_Model():
     print(np.unique(output)) 
     return output
 
-  def update_data(self,X):
+  def update_data(self,X, folder_names = None):
+    if folder_names == None: 
+        folder_names = self.new_train_folder #"gm_train_data"
     #Write a new CSV FIle
     folder = self.train_folder[-1]
-    filename = get_avail_filename(folder, "gm_train_data")
+    filename = get_avail_filename(folder, folder_names)
     filepath = os.path.join("Dataset/SimulatedCVE/cicflowmeter_cve/", filename)
     X.to_csv(filepath, index=False)
-    
     print(f"Added {filepath} as New GM Training Data")
+    
+  def gm_select_data(self, data):
+    scaled_data = data[features[2:]]
+    scaled_data = self.scaler.transform(scaled_data)
+    scores = self.model.model.decision_function(scaled_data)
+    selected_idx = np.where(np.logical_and(scores > self.opt_threshold -2, scores < self.opt_threshold +1))
+    return data.iloc[selected_idx]
       
-  def retrain_gm(self, X):
-    X_scaled = self.scaler.transform(X)
+  def retrain_gm(self, X = pd.DataFrame()):
+    if not X.empty():
+        filtered_data = self.gm_select_data(X)
+        self.update_data(filtered_data)
+        # self.load_model() # ? Reload The Model
+    else:
+        print("No Training Data Added to GM")
+  def compress_training_data(self):
+    pass
 
 class Local_Model():
     def __init__(self, gm):
         self.model = XGBClassifier(objective='binary:logistic')
-        # self.model = DecisionTreeClassifier(criterion='entropy', max_depth=5,  
-        #                                     min_samples_leaf=10, 
-        #                                     # ccp_alpha=0.01, #Pruning coef
-        #                                     random_state=4022)
-        # self.model = RandomForestClassifier(criterion='entropy', 
-        #                                     n_estimators=200,
-        #                                     random_state=4022)
-        # self.model = SVC(kernel='rbf', 
-        #                 gamma='scale',  # You can also use 'auto' depending on the specific setting mentioned
-        #                 C=1.0,  # Default regularization parameter, adjust as needed
-        #                 probability=True,
-        #                 random_state=4022)                
         self.train_folder = "./Dataset/SimulatedCVE/cicflowmeter_cve/training_data/lm/"
         self.model_path = "./cic_xgb.joblib"
         self.state = 0 #0: OFF, 1: ON, 2: HYBRID
@@ -273,7 +294,7 @@ class Local_Model():
         # labeled_new_data = self.upload_gm(filtered_new_data)
         if update_gm:
             filtered_new_data["Label"] = 0
-            self.global_model.update_data(filtered_new_data)
+            # self.global_model.update_data(filtered_new_data)
         # TODO: After updating return the labels or recall the function
         else:
             self.append_training_data(filtered_new_data)
@@ -310,16 +331,12 @@ class Local_Model():
         strategy_name = "QueryInstanceUncertainty"
         strategy = alibox_new.get_query_strategy(strategy_name=strategy_name) #TODO Replace Alibox with a single function
         for i in range(round):
-            batch_size = 1000 
+            batch_size = 10000 
             print(f"Round {i}")
             # Use AL to Select Data
-
-            
             select_ind, informative_score = strategy.select(label_index=label_ind, unlabel_index=divided_arrays[i], 
                                                             threshold=threshold, custom = True, model=model, batch_size=batch_size)
             print(select_ind)
-            # select_ind = select_ind[np.where(np.array(informative_score) > threshold)[0]]
-                              
             batch_size = min(batch_size, np.shape(select_ind)[0] ) #Limit up to 30 000 per query
             print(batch_size)
             # Upload Data to GM
@@ -341,17 +358,12 @@ class Local_Model():
                 X_scaled = self.scaler.transform(X.iloc[label_ind]) 
                 print("Number of duplicates", len(label_ind) - len(np.unique(label_ind)))
                 model = self.model
-                print(label_ind)
                 print(f"np.unique: {np.unique(y[label_ind])}")
                 model.fit(X=X_scaled, y=y[label_ind]) 
-                # pred = model.predict(X_test)
-                # query_accuracy = metric(pred, y_test)      
             else:
                 print("No Data Added")
             print(informative_score[:100])
             informative_score_list.append(informative_score)
-
-            
         merged_train_df = pd.DataFrame(X.iloc[label_ind], columns = features[2:])
         merged_train_df["Label"] = y[label_ind]
         new_train_df = merged_train_df.iloc[len(X_known):]
@@ -366,6 +378,10 @@ class Local_Model():
         #Write a new CSV FIle
         folder = self.train_folder
         filepath = get_avail_filename(folder, "lm_train_data")
-        new_train_df.to_csv(filepath, index=False)
-        print(f"Added {filepath} as New LM Training Data")
-
+        if not new_train_df.empty():
+            new_train_df.to_csv(filepath, index=False)
+            print(f"Added {filepath} as New LM Training Data")
+        else:
+            print("New LM Training Data is Empty.. Skip Recording")
+    def compress_training_data(self):
+        pass

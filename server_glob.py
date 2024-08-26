@@ -6,12 +6,12 @@ import joblib
 from sklearn.preprocessing import StandardScaler
 from deepod.models import PReNet
 
-import model_lib
+from model_lib import *
 
 # Initialize Flask app
 app = Flask(__name__)
 # Initialize Global Model
-clf = model_lib.Global_Model()
+clf = Global_Model()
 
 def decode_json(request):
   data = request.json

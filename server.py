@@ -5,33 +5,33 @@ from xgboost import XGBClassifier
 from io import StringIO
 import joblib
 from sklearn.preprocessing import StandardScaler
-
+from model_lib import *
 # Initialize Flask app
 app = Flask(__name__)
 # def load_model():
-model = joblib.load('cic_xgb.joblib')
-scaler = joblib.load('cic_scaler.joblib')
+# model = joblib.load('cic_xgb.joblib')
+# scaler = joblib.load('cic_scaler.joblib')
+lm = Local_Model(gm) # ! Change GM to API
 def decode_json(request):
   data = request.json
   return data
 def validated_req_schema(flow_data):
   features = ['Src IP', 'Dst IP','Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts', 'TotLen Fwd Pkts',
-       'TotLen Bwd Pkts', 'Fwd Pkt Len Max', 'Fwd Pkt Len Min',
-       'Fwd Pkt Len Mean', 'Fwd Pkt Len Std', 'Bwd Pkt Len Max',
-       'Bwd Pkt Len Min', 'Bwd Pkt Len Mean', 'Bwd Pkt Len Std',
-       'Flow Byts/s', 'Flow Pkts/s', 'Flow IAT Mean', 'Flow IAT Std',
-       'Flow IAT Max', 'Flow IAT Min', 'Fwd IAT Tot', 'Fwd IAT Mean',
-       'Fwd IAT Std', 'Fwd IAT Max', 'Fwd IAT Min', 'Bwd IAT Tot',
-       'Bwd IAT Mean', 'Bwd IAT Std', 'Bwd IAT Max', 'Bwd IAT Min',
-       'Fwd PSH Flags', 'Fwd Header Len', 'Bwd Header Len', 'Fwd Pkts/s',
-       'Bwd Pkts/s', 'Pkt Len Min', 'Pkt Len Max', 'Pkt Len Mean',
-       'Pkt Len Std', 'Pkt Len Var', 'FIN Flag Cnt', 'PSH Flag Cnt',
-       'ACK Flag Cnt', 'URG Flag Cnt', 'Down/Up Ratio', 'Pkt Size Avg',
-       'Fwd Seg Size Avg', 'Bwd Seg Size Avg', 'Subflow Fwd Byts',
-       'Subflow Bwd Byts', 'Init Fwd Win Byts', 'Init Bwd Win Byts',
-       'Fwd Act Data Pkts', 'Fwd Seg Size Min', 'Active Mean',
-       'Active Std', 'Active Max', 'Active Min', 'Idle Mean', 'Idle Std',
-       'Idle Max', 'Idle Min']
+        'TotLen Bwd Pkts', 'Fwd Pkt Len Max', 'Fwd Pkt Len Min',
+        'Fwd Pkt Len Mean', 'Fwd Pkt Len Std', 'Bwd Pkt Len Max',
+        'Bwd Pkt Len Min', 'Bwd Pkt Len Mean', 'Bwd Pkt Len Std', 'Flow Byts/s',
+        'Flow Pkts/s', 'Flow IAT Mean', 'Flow IAT Std', 'Flow IAT Max',
+        'Flow IAT Min', 'Fwd IAT Tot', 'Fwd IAT Mean', 'Fwd IAT Std',
+        'Fwd IAT Max', 'Fwd IAT Min', 'Bwd IAT Tot', 'Bwd IAT Mean',
+        'Bwd IAT Std', 'Bwd IAT Max', 'Bwd IAT Min', 'Fwd PSH Flags',
+        'Fwd Header Len', 'Bwd Header Len', 'Fwd Pkts/s', 'Bwd Pkts/s',
+        'Pkt Len Min', 'Pkt Len Max', 'Pkt Len Mean', 'Pkt Len Std',
+        'Pkt Len Var', 'FIN Flag Cnt', 'PSH Flag Cnt', 'ACK Flag Cnt',
+        'URG Flag Cnt', 'Down/Up Ratio', 'Pkt Size Avg', 'Fwd Seg Size Avg',
+        'Bwd Seg Size Avg', 'Subflow Fwd Byts', 'Subflow Bwd Byts',
+        'Init Fwd Win Byts', 'Init Bwd Win Byts', 'Fwd Act Data Pkts',
+        'Fwd Seg Size Min', 'Active Mean', 'Active Std', 'Active Max',
+        'Active Min', 'Idle Mean', 'Idle Std', 'Idle Max', 'Idle Min']
 
   df_pruned = flow_data[features]
       
