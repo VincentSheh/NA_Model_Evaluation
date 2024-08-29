@@ -33,8 +33,8 @@ def get_user_ip(X):
 # TODO: Retrain the model based on the updated
 def retrain():
     validated_flow_data = validated_req_schema(request) #!NOT IMPLEMENTED
-    gm.retrain_gm(validated_flow_data)
-    # gm.load_model()
+    gm.retrain_gm(validated_flow_data) 
+    return jsonify({"GM Trained Successfully"}, 200)
 
 @app.route("/offload", methods=['POST'])
 def rcv_offload():

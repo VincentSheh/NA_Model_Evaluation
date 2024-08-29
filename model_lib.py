@@ -203,11 +203,13 @@ class Global_Model():
     
   def load_data(self,scaler=None):
     full_df = read_csv(self.train_folder)
-    new_train_df = read_csv(self.new_train_folder)
+
     # validated_df = validated_req_schema(full_df)
     sampled_df = sample_df(full_df,0.05) # !Shouldn't Sample when loading from ./training_data/
     print("Before Merging", sampled_df["Label"].value_counts())
-    sampled_df = pd.concat([sampled_df, new_train_df], ignore_index=True)
+    if os.listdir("./Dataset/SimulatedCVE/cicflowmeter_cve/" + self.new_train_folder[0]):
+        new_train_df = read_csv(self.new_train_folder)    
+        sampled_df = pd.concat([sampled_df, new_train_df], ignore_index=True)
     label = sampled_df["Label"].values
     
     print("After Merging", sampled_df["Label"].value_counts())
@@ -218,18 +220,22 @@ class Global_Model():
         normalized_df = pd.DataFrame(normalized_data, columns = columns)
     else:
         normalized_df = sampled_df.copy()
+    # For Training Include the Unsupervised Labeled Data
     X_train, X_test, y_train, y_test = train_test_split(normalized_df, label, shuffle=True, stratify=label,
                                                         test_size=0.2, random_state=4022)
+    
     return X_train, X_test, y_train, y_test    
     
-  def load_model(self): # Load the model through training since pytorch isn't supported
+  def load_model(self, eval_flag=True): # Load the model through training since pytorch isn't supported
     model = PReNet
     clf = model(epochs=1, device='cuda')
+    # if eval_flag:
     X_train, X_test, y_train, y_test = self.load_data(self.scaler)
     clf.fit(X_train.to_numpy()[:20000], y_train[:20000])
     
-    opt_threshold = eval_accuracy(clf, X_test, y_test)
+    opt_threshold = eval_accuracy(clf, X_test, y_test) #! Should run this line, when initally load model
     return clf, opt_threshold
+    # self.model = clf
             
       
   def perform_inference(self, X):
@@ -241,26 +247,29 @@ class Global_Model():
 
   def update_data(self,X, folder_names = None):
     if folder_names == None: 
-        folder_names = self.new_train_folder #"gm_train_data"
+        folder_names = self.new_train_folder[0] #"gm_train_data"
     #Write a new CSV FIle
-    folder = self.train_folder[-1]
-    filename = get_avail_filename(folder, folder_names)
+    file = "gm_train_data"
+    filename = get_avail_filename(folder_names, file)
     filepath = os.path.join("Dataset/SimulatedCVE/cicflowmeter_cve/", filename)
-    X.to_csv(filepath, index=False)
+    if not X.empty:
+        X.to_csv(filepath, index=False)
     print(f"Added {filepath} as New GM Training Data")
     
   def gm_select_data(self, data):
     scaled_data = data[features[2:]]
     scaled_data = self.scaler.transform(scaled_data)
-    scores = self.model.model.decision_function(scaled_data)
+    print(scaled_data)
+    scores = self.model.decision_function(scaled_data)
     selected_idx = np.where(np.logical_and(scores > self.opt_threshold -2, scores < self.opt_threshold +1))
+    print(f"\033[32mSelected {len(selected_idx)}\033[0m")
     return data.iloc[selected_idx]
       
   def retrain_gm(self, X = pd.DataFrame()):
-    if not X.empty():
+    if not X.empty:
         filtered_data = self.gm_select_data(X)
         self.update_data(filtered_data)
-        # self.load_model() # ? Reload The Model
+        self.load_model(eval_flag=False) # ? Reload The Model
     else:
         print("No Training Data Added to GM")
   def compress_training_data(self):
