@@ -3,7 +3,6 @@ from flask import Flask, request, jsonify
 import pandas as pd
 from io import StringIO
 import joblib
-from sklearn.preprocessing import StandardScaler
 from deepod.models import PReNet
 
 from model_lib import *
@@ -11,7 +10,7 @@ from model_lib import *
 # Initialize Flask app
 app = Flask(__name__)
 # Initialize Global Model
-clf = Global_Model()
+gm = Global_Model(['dripper/', 'BENIGN/', 'bonesi/'])
 
 def decode_json(request):
   data = request.json
@@ -30,43 +29,49 @@ def get_user_ip(X):
     print(origin_ip_series.values)
     return X, origin_ip_series
 
-# TODO LM Manager (Offload to other LM)
-
-
 @app.route("/retrain", methods=['POST'])
 # TODO: Retrain the model based on the updated
+def retrain():
+    validated_flow_data = validated_req_schema(request) #!NOT IMPLEMENTED
+    gm.retrain_gm(validated_flow_data)
+    # gm.load_model()
 
 @app.route("/offload", methods=['POST'])
-def detect():
-    # Check if a file is part of the POST request
-    if 'file' not in request.files:
-        print("No file part")
-        return "No file part", 400
-    file = request.files['file']
-    if file.filename == '':
-        print('No selected file')
-        return "No selected file", 400
-    if file:
-        # Convert the file stream directly to a DataFrame
-        string_data = StringIO(file.read().decode('utf-8'))   
-        flow_df = pd.read_csv(string_data) 
-    validated_flow_data = model_lib.validated_req_schema(flow_df)    
-    validated_flow_data, origin_ip_series = get_user_ip(validated_flow_data.copy())
-    # TODO: Append to training_csv
+def rcv_offload():
 
-    
-    isMalicious = clf.perform_inference(validated_flow_data)
+    validated_flow_data = validated_req_schema(request, is_json=True)    
+    validated_flow_data, origin_ip_series = get_user_ip(validated_flow_data.copy())
+
+    isMalicious = gm.perform_inference(validated_flow_data)
     ip_label_tuple = list(zip(origin_ip_series.values, isMalicious))
-    isMalicious_list = [int(x) for x in isMalicious]
     
-    
+    # Convert isMalicious to a list of native Python types
+    isMalicious_list = np.array(isMalicious).astype(int).tolist()
 
     # Return the result as a JSON response
     return jsonify({
         "origin_ip": list(origin_ip_series),
         "Label": isMalicious_list
     }), 200
+    
+@app.route("/detect", methods=['POST'])
+def detect():
+    
+    validated_flow_data = validated_req_schema(request, is_json=False)    
+    validated_flow_data, origin_ip_series = get_user_ip(validated_flow_data.copy())
+
+    isMalicious = gm.perform_inference(validated_flow_data)
+    ip_label_tuple = list(zip(origin_ip_series.values, isMalicious))
+    
+    # Convert isMalicious to a list of native Python types
+    isMalicious_list = np.array(isMalicious).astype(int).tolist()
+
+    # Return the result as a JSON response
+    return jsonify({
+        "origin_ip": list(origin_ip_series),
+        "Label": isMalicious_list
+    }), 200    
   
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port = 5050, threaded=True, debug=True)
+  app.run(host='0.0.0.0', port = 5050, threaded=True, debug=False)

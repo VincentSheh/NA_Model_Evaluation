@@ -11,6 +11,7 @@ from alipy import ToolBox
 from collections import Counter
 from io import StringIO
 from flask import Flask, request, jsonify
+import json
 
 
 features = ['Src IP', 'Dst IP','Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts', 'TotLen Fwd Pkts',
@@ -104,25 +105,34 @@ def read_csv(folder_names = ['dripper/', 'BENIGN/', 'bonesi/']):
         if folder == 'training_data/gm/': #Avoid Dst IP and Src IP when loading from training folder
             df = df[features[2:]].copy()
         else:
-            df = df[features].copy()
+            df = df[features[2:]].copy()
         print(folder[:-1])
         df["Label"] = folder[:-1]
         df["Label"] = df["Label"].apply(lambda x: 0 if (x == "BENIGN" or x == 0) else 1)
         full_df = pd.concat([full_df, df], axis=0, ignore_index=True)
     label = full_df["Label"]    
-    source_ip = full_df["Src IP"]
-    dst_ip = full_df["Dst IP"]
-    cleaned_df = full_df.drop(columns=["Label", "Src IP", "Dst IP"], inplace=False)
+    cleaned_df = full_df.drop(columns=["Label"], inplace=False)
     cleaned_df = clean_df(cleaned_df)
     # Drop String Columns
     cleaned_df["Label"] = label
-    cleaned_df["Src IP"] = source_ip
-    cleaned_df["Dst IP"] = dst_ip
-    
     return cleaned_df
   
-def validated_req_schema(flow_data):
+def validated_req_schema(request, is_json = False, is_labeled = False): #is_labeled means for training
     # Check if a file is part of the POST request
+    if is_labeled:
+        features.append("Label")
+    if is_json:
+        data = request.get_json()
+        if isinstance(data, list):
+            flow_df = pd.DataFrame(data)
+        else:
+            # If needed, use pd.read_json with properly formatted JSON string
+            flow_df = pd.read_json(data, orient="records")
+        if data is None:
+            return jsonify({"error": "No data received"}), 400
+        df_pruned = flow_df[features]
+        return df_pruned
+    
     if 'file' not in request.files:
         print("No file part")
         return "No file part", 400
@@ -133,8 +143,9 @@ def validated_req_schema(flow_data):
     if file:
         # Convert the file stream directly to a DataFrame
         string_data = StringIO(file.read().decode('utf-8'))   
-        flow_df = pd.read_csv(string_data)     
-    df_pruned = flow_data[features]
+        flow_df = pd.read_csv(string_data)   
+          
+    df_pruned = flow_df[features]
     return df_pruned  
 
 def get_optimal_threshold(precision, recall, thresholds):
@@ -200,7 +211,7 @@ class Global_Model():
     label = sampled_df["Label"].values
     
     print("After Merging", sampled_df["Label"].value_counts())
-    sampled_df.drop(columns=["Src IP", "Dst IP", "Label"], axis=1, inplace=True)
+    sampled_df.drop(columns=["Label"], axis=1, inplace=True)
     columns = sampled_df.columns
     if scaler != None:
         normalized_data = scaler.transform(sampled_df)
@@ -215,7 +226,7 @@ class Global_Model():
     model = PReNet
     clf = model(epochs=1, device='cuda')
     X_train, X_test, y_train, y_test = self.load_data(self.scaler)
-    clf.fit(X_train.to_numpy()[:], y_train[:])
+    clf.fit(X_train.to_numpy()[:20000], y_train[:20000])
     
     opt_threshold = eval_accuracy(clf, X_test, y_test)
     return clf, opt_threshold
@@ -256,14 +267,14 @@ class Global_Model():
     pass
 
 class Local_Model():
-    def __init__(self, gm):
+    def __init__(self):
         self.model = XGBClassifier(objective='binary:logistic')
         self.train_folder = "./Dataset/SimulatedCVE/cicflowmeter_cve/training_data/lm/"
         self.model_path = "./cic_xgb.joblib"
         self.state = 0 #0: OFF, 1: ON, 2: HYBRID
         self.scaler = joblib.load('./cic_scaler.joblib')
-        self.global_model = gm #Replace With HTTP API
-        self.load_model()
+        # self.load_model()
+        self.model = joblib.load(self.model_path)
     def load_model(self):
         # self.model = joblib.load(self.model_path)
         known_df = self.load_known_df()
@@ -290,7 +301,7 @@ class Local_Model():
     def retrain_model(self, X_new, y_new=None, threshold = 0.2, update_gm = False): #Select Most Important Data and Upload Newly Recorded Data
         # TODO: Use AL to Select Prerecorded Data
         known_df = self.load_known_df()
-        filtered_new_data, informative_score_list, updated_model = self.select_data(known_df, X_new, threshold, y_new)
+        filtered_new_data, updated_model = self.select_data(known_df, X_new, threshold, y_new)
         # labeled_new_data = self.upload_gm(filtered_new_data)
         if update_gm:
             filtered_new_data["Label"] = 0
@@ -300,7 +311,8 @@ class Local_Model():
             self.append_training_data(filtered_new_data)
             # Update the model        
             self.model = updated_model # ! If update_gm, should replace the previous record for AL to work
-        return informative_score_list
+            print("\033[36mModel Successfully Updated\033[0m")
+        # return informative_score_list
         
     def upload_gm(self, X_query): 
         # X_query_scaled = self.scaler.transform(X_query)
@@ -313,13 +325,18 @@ class Local_Model():
         informative_score_list = []
         y_new = np.ones(X_new.shape[0]) * 2 if y_new is None else y_new
         model = self.model
-        
         X_known = known_df.drop(columns=["Label"], inplace = False).copy()
         y_known = known_df["Label"]
+        # Append 20% of Data Labeled MALICIOUS from the new training data #!There might be a bug here
+        selected_malicious_idx = y_new[y_new==1].sample(frac=0.2, random_state=4022).index
+        X_known = pd.concat([X_known, X_new.iloc[selected_malicious_idx]], ignore_index=True)
+        y_known = np.concatenate([y_known, y_new[selected_malicious_idx]]).astype(int)
+        print(f"Added {len(selected_malicious_idx)} to training data")
+        X_new.drop(selected_malicious_idx, inplace=True)
+        y_new.drop(selected_malicious_idx, inplace=True)
         # X_known.drop(columns=["Src IP", "Dst IP"], inplace=True)
         X = pd.concat([X_known, X_new], ignore_index=True)
         y = np.concatenate([y_known, y_new]).astype(int)
-        print(y)
         label_ind = np.arange(len(X_known))
         print("Size of Label Index", len(X_known))
         unlab_ind = np.arange(len(X_known), len(X))
@@ -334,15 +351,13 @@ class Local_Model():
             batch_size = 10000 
             print(f"Round {i}")
             # Use AL to Select Data
-            select_ind, informative_score = strategy.select(label_index=label_ind, unlabel_index=divided_arrays[i], 
+            select_ind = strategy.select(label_index=label_ind, unlabel_index=divided_arrays[i], 
                                                             threshold=threshold, custom = True, model=model, batch_size=batch_size)
-            print(select_ind)
             batch_size = min(batch_size, np.shape(select_ind)[0] ) #Limit up to 30 000 per query
-            print(batch_size)
             # Upload Data to GM
             idx_to_query = select_ind[:batch_size]
             if len(idx_to_query) > 0:
-                if 2.0 in y_new: 
+                if 2.0 in y_new.values: 
                     pseudo_labels = self.upload_gm(X.iloc[idx_to_query]) 
                     y[idx_to_query] = pseudo_labels 
                 else: # ? Set GM to be 100% Accurate
@@ -356,18 +371,16 @@ class Local_Model():
                 print(f"Added {batch_size} Shape of Label_ind: {np.shape(label_ind)}")  
                 #Update The Model
                 X_scaled = self.scaler.transform(X.iloc[label_ind]) 
-                print("Number of duplicates", len(label_ind) - len(np.unique(label_ind)))
                 model = self.model
-                print(f"np.unique: {np.unique(y[label_ind])}")
                 model.fit(X=X_scaled, y=y[label_ind]) 
             else:
                 print("No Data Added")
-            print(informative_score[:100])
-            informative_score_list.append(informative_score)
+            # informative_score_list.append(informative_score)
         merged_train_df = pd.DataFrame(X.iloc[label_ind], columns = features[2:])
         merged_train_df["Label"] = y[label_ind]
         new_train_df = merged_train_df.iloc[len(X_known):]
-        return new_train_df, informative_score_list, model
+        # return new_train_df, informative_score_list, model
+        return new_train_df, model
         
     def perform_inference(self, X):
             X_scaled = self.scaler.transform(X) # ! Add Scaler
@@ -378,7 +391,7 @@ class Local_Model():
         #Write a new CSV FIle
         folder = self.train_folder
         filepath = get_avail_filename(folder, "lm_train_data")
-        if not new_train_df.empty():
+        if not new_train_df.empty:
             new_train_df.to_csv(filepath, index=False)
             print(f"Added {filepath} as New LM Training Data")
         else:
