@@ -59,29 +59,6 @@ def retrain():
     return jsonify({'message': "Retraining Started Successfully"}, 200)
     
 
-@app.route("/detect", methods=['POST'])
-def detect():
-
-    validated_flow_data = validated_req_schema(request)
-    validated_flow_data.to_csv("x.csv")
-    validated_flow_data, origin_ip_series = get_user_ip(validated_flow_data.copy())
-
-    # ! Can't find user_ip
-
-    
-    isMalicious = lm.perform_inference(validated_flow_data)
-    ip_label_tuple = list(zip(origin_ip_series.values, isMalicious))
-    # ip_malic_df = pd.DataFrame(ip_label_tuple, columns=["origin_ip", "Labels"])
-    # ip_malic_df.to_csv('ip_malic.csv')
-
-    # Convert isMalicious to a list of native Python types
-    isMalicious_list = np.array(isMalicious).astype(int).tolist()
-
-    # Return the result as a JSON response
-    return jsonify({
-        "origin_ip": list(origin_ip_series),
-        "Label": isMalicious_list
-    }), 200
   
 @app.route("/offload", methods=['POST'])
 def offload():
@@ -117,5 +94,29 @@ def offload():
       "Label": isMalicious_list
   }), 200
 
+@app.route("/detect", methods=['POST'])
+def detect():
+
+    validated_flow_data = validated_req_schema(request)
+    validated_flow_data.to_csv("x.csv")
+    validated_flow_data, origin_ip_series = get_user_ip(validated_flow_data.copy())
+
+    # ! Can't find user_ip
+
+    
+    isMalicious = lm.perform_inference(validated_flow_data)
+    ip_label_tuple = list(zip(origin_ip_series.values, isMalicious))
+    # ip_malic_df = pd.DataFrame(ip_label_tuple, columns=["origin_ip", "Labels"])
+    # ip_malic_df.to_csv('ip_malic.csv')
+
+    # Convert isMalicious to a list of native Python types
+    isMalicious_list = np.array(isMalicious).astype(int).tolist()
+
+    # Return the result as a JSON response
+    return jsonify({
+        "origin_ip": list(origin_ip_series),
+        "Label": isMalicious_list
+    }), 200
+    
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 3001, threaded=True, debug=True)

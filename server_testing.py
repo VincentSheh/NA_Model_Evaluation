@@ -5,11 +5,15 @@ import pickle
 from io import StringIO
 import numpy as np
 import os
-def send_csv(url, file_path, offload_url = "http://localhost:5050/offload"):
+def send_csv(url, file_path, offload_url = "http://localhost:5050/", action="offload"):
     files = {'file': open(file_path, 'rb')}
     data = {'offload_url': offload_url}
-    response = requests.post(url, files=files, data=data)
+    print(url+action)
+    response = requests.post(url+action, files=files, data=data)
     if response.status_code == 200:
+        if action == 'retrain': #Doesn't Return Dataframe
+            print(f"\033[32mRetraining Success\033[0m")
+            return None
         # Convert JSON response back into DataFrame
         json_data = response.json()
         df = pd.DataFrame(json_data, columns=["origin_ip", "Label"])
@@ -35,12 +39,13 @@ def merge_csv(file_path):
 def main():
     parser = argparse.ArgumentParser(description='Upload File to CSV.')
     parser.add_argument('file_path', type=str, help='Path to the CSV file to send.')
+    parser.add_argument('action', type=str, help='Action={detect, retrain, offload}')
     
     args = parser.parse_args()
-    url = "http://localhost:3001/offload"
+    url = "http://localhost:5050/"
 
     try:
-        labeled_df = send_csv(url, args.file_path)
+        labeled_df = send_csv(url, args.file_path, action=args.action)
         if labeled_df is not None and not labeled_df.empty:
             labeled_df.to_csv("ip_labels.csv", index=False)
             malicious_ip = labeled_df.loc[labeled_df["Label"] == 1, "origin_ip"]

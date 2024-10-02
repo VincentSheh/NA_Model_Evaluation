@@ -171,6 +171,7 @@ def get_avail_filename(folder,filename):
     filenumber = 0
     filepath = os.path.join(folder,f"{filename}_{filenumber}.csv")
     while os.path.exists(filepath):
+        
         filenumber+=1
         filepath = os.path.join(folder, f"{filename}_{filenumber}.csv")  
     print(filepath)  
@@ -228,7 +229,7 @@ class Global_Model():
     
   def load_model(self, eval_flag=True): # Load the model through training since pytorch isn't supported
     model = PReNet
-    clf = model(epochs=1, device='cuda')
+    clf = model(epochs=1, device='cpu')
     # if eval_flag:
     X_train, X_test, y_train, y_test = self.load_data(self.scaler)
     clf.fit(X_train.to_numpy()[:20000], y_train[:20000])
@@ -250,8 +251,9 @@ class Global_Model():
         folder_names = self.new_train_folder[0] #"gm_train_data"
     #Write a new CSV FIle
     file = "gm_train_data"
+    folder_names = os.path.join("Dataset/SimulatedCVE/cicflowmeter_cve/",self.new_train_folder[0]) #"gm_train_data"
     filename = get_avail_filename(folder_names, file)
-    filepath = os.path.join("Dataset/SimulatedCVE/cicflowmeter_cve/", filename)
+    filepath = filename
     if not X.empty:
         X.to_csv(filepath, index=False)
     print(f"Added {filepath} as New GM Training Data")
@@ -260,7 +262,7 @@ class Global_Model():
     scaled_data = data[features[2:]]
     scaled_data = self.scaler.transform(scaled_data)
     print(scaled_data)
-    scores = self.model.decision_function(scaled_data)
+    scores = self.model.decision_function(scaled_data) #Perform Active Learning Selection
     selected_idx = np.where(np.logical_and(scores > self.opt_threshold -2, scores < self.opt_threshold +1))
     print(f"\033[32mSelected {len(selected_idx)}\033[0m")
     return data.iloc[selected_idx]
