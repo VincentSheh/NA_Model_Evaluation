@@ -10,7 +10,11 @@ from model_lib import *
 # Initialize Flask app
 app = Flask(__name__)
 # Initialize Global Model
+<<<<<<< HEAD
 gm = Global_Model(['dripper/', 'BENIGN/', 'bonesi/'])
+=======
+gm = Global_Model(['BENIGN/', 'bonesi/'])
+>>>>>>> b5dfc215d2d6fb22161f27989b4a5c9ec3354419
 
 def decode_json(request):
   data = request.json

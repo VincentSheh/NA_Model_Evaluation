@@ -243,7 +243,8 @@ class Global_Model():
     X_scaled = self.scaler.transform(X) # ! Add Scaler
     anomaly_scores = self.model.decision_function(X_scaled)
     output = np.where(anomaly_scores > self.opt_threshold, 1,0)
-    print(np.unique(output)) 
+    unique, counts = np.unique(output, return_counts=True)
+    print(f"Malicious Request: {counts[0]} , Benign Request:{counts[1]}")
     return output
 
   def update_data(self,X, folder_names = None):
@@ -396,7 +397,8 @@ class Local_Model():
     def perform_inference(self, X):
             X_scaled = self.scaler.transform(X) # ! Add Scaler
             output = self.model.predict(X_scaled) 
-            print(np.unique(output)) 
+            unique, counts = np.unique(output, return_counts=True)
+            print(f"Malicious Request: {counts[0]} , Benign Request:{counts[1]}")
             return output
     def append_training_data(self,new_train_df):
         #Write a new CSV FIle
