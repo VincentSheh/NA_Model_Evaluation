@@ -65,7 +65,7 @@ def detect():
     
     # Convert isMalicious to a list of native Python types
     isMalicious_list = np.array(isMalicious).astype(int).tolist()
-    
+
     # Return the result as a JSON response
     return jsonify({
         "origin_ip": list(origin_ip_series),
