@@ -157,6 +157,14 @@ def get_optimal_threshold(precision, recall, thresholds):
     return optimal_threshold
   
 def eval_accuracy(clf, X_test, y_test):
+    batch_size = 64
+    anomaly_scores = []   
+    # for i in range(0, X_test.shape[0], batch_size) :
+    #     batch_X = X_test[i:i+batch_size]
+    #     batch_scores = clf.decision_function(batch_X.to_numpy())
+    #     anomaly_scores.append(batch_scores)
+    # anomaly_scores = np.concatenate(anomaly_scores)
+    
     # anomaly_scores = []   
     # for i in range(0, X_test.shape[0], batch_size) :
     #     batch_X = X_test[i:i+batch_size]
@@ -236,7 +244,7 @@ class Global_Model():
     
   def load_model(self, eval_flag=True): # Load the model through training since pytorch isn't supported
     model = PReNet
-    clf = model(epochs=1, device='cpu', batch_size=32)
+    clf = model(epochs=1, device='cpu', batch_size=16)
     # if eval_flag:
     X_train, X_test, y_train, y_test = self.load_data(self.scaler)
     clf.fit(X_train.to_numpy()[:20000], y_train[:20000])
