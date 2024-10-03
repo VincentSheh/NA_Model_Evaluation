@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 
 # Copy the current directory contents into the container at /app
-COPY ../model_lib.py ../server_glob.py . /app
+COPY . /app
 
 
 EXPOSE 5050

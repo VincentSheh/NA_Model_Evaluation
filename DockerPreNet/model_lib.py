@@ -12,7 +12,7 @@ from collections import Counter
 from io import StringIO
 from flask import Flask, request, jsonify
 import json
-
+import gc
 
 features = ['Src IP', 'Dst IP','Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts', 'TotLen Fwd Pkts',
        'TotLen Bwd Pkts', 'Fwd Pkt Len Max', 'Fwd Pkt Len Min',
@@ -157,6 +157,13 @@ def get_optimal_threshold(precision, recall, thresholds):
     return optimal_threshold
   
 def eval_accuracy(clf, X_test, y_test):
+    # anomaly_scores = []   
+    # for i in range(0, X_test.shape[0], batch_size) :
+    #     batch_X = X_test[i:i+batch_size]
+    #     batch_scores = clf.decision_function(batch_X.to_numpy())
+    #     anomaly_scores.append(batch_scores)
+    # anomaly_scores = np.concatenate(anomaly_scores)
+    
     anomaly_scores = clf.decision_function(X_test.to_numpy())
     fpr, tpr, _ = roc_curve(y_test, anomaly_scores)
     precision, recall, thresholds = precision_recall_curve(y_test, anomaly_scores)
@@ -167,6 +174,7 @@ def eval_accuracy(clf, X_test, y_test):
     print(f"F1 Score: {f1:.4f}, Accuracy: {accuracy_score(pred, y_test):.4f}")
     print(conf_matrix)
     return opt_threshold
+
 def get_avail_filename(folder,filename):
     filenumber = 0
     filepath = os.path.join(folder,f"{filename}_{filenumber}.csv")
@@ -192,7 +200,6 @@ def load_data(train_folder,scaler=None):
                                                         test_size=0.2, random_state=4022)
     return X_train, X_test, y_train, y_test    
 
-    
     
 class Global_Model():
   def __init__(self, train_folder = ['dripper/', 'BENIGN/', 'bonesi/'], new_data_folder = ["training_data/gm/"]):
@@ -229,22 +236,33 @@ class Global_Model():
     
   def load_model(self, eval_flag=True): # Load the model through training since pytorch isn't supported
     model = PReNet
-    clf = model(epochs=1, device='cpu')
+    clf = model(epochs=1, device='cpu', batch_size=32)
     # if eval_flag:
     X_train, X_test, y_train, y_test = self.load_data(self.scaler)
     clf.fit(X_train.to_numpy()[:20000], y_train[:20000])
     
     opt_threshold = eval_accuracy(clf, X_test, y_test) #! Should run this line, when initally load model
+    gc.collect()
     return clf, opt_threshold
     # self.model = clf
             
       
   def perform_inference(self, X):
-    X_scaled = self.scaler.transform(X) # ! Add Scaler
-    anomaly_scores = self.model.decision_function(X_scaled)
+    batch_size = 64
+    X_scaled = self.scaler.transform(X)  # Scale the input data
+    anomaly_scores = []
+
+    # Process in batches
+    # for i in range(0, X.shape[0], batch_size):
+    #     batch_X = X_scaled[i:i + batch_size]  # Select the batch
+    #     batch_scores = self.model.decision_function(batch_X)  # Get the scores for the batch
+    #     anomaly_scores.append(batch_scores)  # Append the batch scores
+    # anomaly_scores = np.concatenate(anomaly_scores)
+    anomaly_scores = self.model.decision_function(X_scaled)    
     output = np.where(anomaly_scores > self.opt_threshold, 1,0)
     unique, counts = np.unique(output, return_counts=True)
     print(f"Malicious Request: {counts[0]} , Benign Request:{counts[1]}")
+    gc.collect()
     return output
 
   def update_data(self,X, folder_names = None):
