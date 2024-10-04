@@ -3,7 +3,6 @@ from flask import Flask, request, jsonify
 import pandas as pd
 from io import StringIO
 import joblib
-from deepod.models import PReNet
 
 from model_lib import *
 

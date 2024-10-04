@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import joblib
 from sklearn.preprocessing import StandardScaler
-from deepod.models import PReNet
+from deepod.models import DeepSAD
 import os
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_curve, auc, roc_curve, recall_score, precision_score, f1_score, confusion_matrix, accuracy_score
@@ -235,11 +235,11 @@ class Global_Model():
     return X_train, X_test, y_train, y_test    
     
   def load_model(self, eval_flag=True): # Load the model through training since pytorch isn't supported
-    model = PReNet
-    clf = model(epochs=1, device='cpu', batch_size=32)
+    model = DeepSAD
+    clf = model(epochs=1, device='cpu',rep_dim=64, hidden_dims='512,256,128', batch_size=32)
     # if eval_flag:
     X_train, X_test, y_train, y_test = self.load_data(self.scaler)
-    clf.fit(X_train.to_numpy()[:20000], y_train[:20000])
+    clf.fit(X_train.to_numpy()[:], y_train[:])
     
     opt_threshold = eval_accuracy(clf, X_test, y_test) #! Should run this line, when initally load model
     gc.collect()
