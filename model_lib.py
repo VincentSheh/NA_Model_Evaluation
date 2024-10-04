@@ -13,6 +13,7 @@ from io import StringIO
 from flask import Flask, request, jsonify
 import json
 import gc
+import pickle
 
 features = ['Src IP', 'Dst IP','Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts', 'TotLen Fwd Pkts',
        'TotLen Bwd Pkts', 'Fwd Pkt Len Max', 'Fwd Pkt Len Min',
@@ -206,8 +207,14 @@ class Global_Model():
     self.scaler = joblib.load('cic_scaler.joblib')
     self.train_folder = train_folder
     self.new_train_folder = new_data_folder
-    self.model, self.opt_threshold = self.load_model()
-    
+    # self.model, self.opt_threshold = self.load_model()
+    if(os.path.exists('./deepsad.pkl')):
+        with open("./deepsad.pkl", 'rb') as f:
+            self.model, self.opt_threshold = pickle.load(f)
+    else:
+        self.model, self.opt_threshold = self.reload_model()
+        with open("./deepsad.pkl", 'wb') as f:
+            pickle.dump((self.model, self.opt_threshold), f)  # Save as a tuple or list        
     
   def load_data(self,scaler=None):
     full_df = read_csv(self.train_folder)
@@ -232,17 +239,18 @@ class Global_Model():
     X_train, X_test, y_train, y_test = train_test_split(normalized_df, label, shuffle=True, stratify=label,
                                                         test_size=0.2, random_state=4022)
     
-    return X_train, X_test, y_train, y_test    
+    return X_train, X_test, y_train, y_test  
+  
     
-  def load_model(self, eval_flag=True): # Load the model through training since pytorch isn't supported
+  def reload_model(self, eval_flag=True): # Load the model through training since pytorch isn't supported
     model = DeepSAD
     clf = model(epochs=1, device='cpu',rep_dim=64, hidden_dims='512,256,128', batch_size=32)
     # if eval_flag:
     X_train, X_test, y_train, y_test = self.load_data(self.scaler)
     clf.fit(X_train.to_numpy()[:], y_train[:])
-    
     opt_threshold = eval_accuracy(clf, X_test, y_test) #! Should run this line, when initally load model
     gc.collect()
+    
     return clf, opt_threshold
     # self.model = clf
             
@@ -290,7 +298,7 @@ class Global_Model():
     if not X.empty:
         filtered_data = self.gm_select_data(X)
         self.update_data(filtered_data)
-        self.load_model(eval_flag=False) # ? Reload The Model
+        self.reload_model(eval_flag=False) # ? Reload The Model
     else:
         print("No Training Data Added to GM")
   def compress_training_data(self):

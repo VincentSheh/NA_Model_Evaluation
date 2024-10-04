@@ -39,10 +39,10 @@ def merge_csv(file_path):
 def main():
     parser = argparse.ArgumentParser(description='Upload File to CSV.')
     parser.add_argument('file_path', type=str, help='Path to the CSV file to send.')
+    parser.add_argument('url', type=str, help="Detection Server url")
     parser.add_argument('action', type=str, help='Action={detect, retrain, offload}')
-    
     args = parser.parse_args()
-    url = "http://localhost:5050/"
+    url = args.url+"/"
 
     try:
         labeled_df = send_csv(url, args.file_path, action=args.action)
