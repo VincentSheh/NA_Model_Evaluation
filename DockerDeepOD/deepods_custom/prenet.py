@@ -4,11 +4,11 @@ Weakly-supervised anomaly detection by pairwise relation prediction task
 @Author: Hongzuo Xu <hongzuoxu@126.com, xuhongzuo13@nudt.edu.cn>
 """
 
-from deepod.core.base_model import BaseDeepAD
+from deepods_custom.base_model import BaseDeepAD
 from deepod.core.networks.base_networks import LinearBlock, MLPnet
 import torch
 import numpy as np
-import gc
+
 
 class PReNet(BaseDeepAD):
     def __init__(self, epochs=100, batch_size=64, lr=1e-3,
@@ -82,13 +82,11 @@ class PReNet(BaseDeepAD):
         for i in range(a):
             a_idx = np.random.choice(known_anom_id, X.shape[0], replace=True)
             u_idx = np.random.choice(unlabeled_id, X.shape[0], replace=True)
-            x2_a = torch.index_select(train_data, 0, torch.from_numpy(a_idx))
-            x2_u = torch.index_select(train_data, 0, torch.from_numpy(u_idx))
-
+            x2_a = train_data[a_idx]
+            x2_u = train_data[u_idx]
 
             x2_a_lst.append(x2_a)
             x2_u_lst.append(x2_u)
-            gc.collect()
 
         test_loader = []
 
