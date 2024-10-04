@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import joblib
 from sklearn.preprocessing import StandardScaler
-from deepod.models import PReNet
+from deepod.models import DeepSAD
 import os
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_curve, auc, roc_curve, recall_score, precision_score, f1_score, confusion_matrix, accuracy_score
@@ -12,7 +12,7 @@ from collections import Counter
 from io import StringIO
 from flask import Flask, request, jsonify
 import json
-
+import gc
 
 features = ['Src IP', 'Dst IP','Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts', 'TotLen Fwd Pkts',
        'TotLen Bwd Pkts', 'Fwd Pkt Len Max', 'Fwd Pkt Len Min',
@@ -157,8 +157,7 @@ def get_optimal_threshold(precision, recall, thresholds):
     return optimal_threshold
   
 def eval_accuracy(clf, X_test, y_test):
-    batch_size = 64
-    anomaly_scores = []   
+    # anomaly_scores = []   
     # for i in range(0, X_test.shape[0], batch_size) :
     #     batch_X = X_test[i:i+batch_size]
     #     batch_scores = clf.decision_function(batch_X.to_numpy())
@@ -236,13 +235,14 @@ class Global_Model():
     return X_train, X_test, y_train, y_test    
     
   def load_model(self, eval_flag=True): # Load the model through training since pytorch isn't supported
-    model = PReNet
-    clf = model(epochs=1, device='cpu', batch_size=16)
+    model = DeepSAD
+    clf = model(epochs=1, device='cpu',rep_dim=64, hidden_dims='512,256,128', batch_size=32)
     # if eval_flag:
     X_train, X_test, y_train, y_test = self.load_data(self.scaler)
-    clf.fit(X_train.to_numpy()[:20000], y_train[:20000])
+    clf.fit(X_train.to_numpy()[:], y_train[:])
     
     opt_threshold = eval_accuracy(clf, X_test, y_test) #! Should run this line, when initally load model
+    gc.collect()
     return clf, opt_threshold
     # self.model = clf
             
@@ -262,6 +262,7 @@ class Global_Model():
     output = np.where(anomaly_scores > self.opt_threshold, 1,0)
     unique, counts = np.unique(output, return_counts=True)
     print(f"Malicious Request: {counts[0]} , Benign Request:{counts[1]}")
+    gc.collect()
     return output
 
   def update_data(self,X, folder_names = None):

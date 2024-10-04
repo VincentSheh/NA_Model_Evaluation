@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prenet-detector-deployment
+  name: deepod-detector-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: prenet-server
+      app: deepod-server
   template:
     metadata:
       labels:
-        app: prenet-server
+        app: deepod-server
     spec:
       containers:
-      - name: prenet-server
-        image: asture123/prenet-detector
+      - name: deepod-server
+        image: asture123/deepod-detector
         env:
 
     
@@ -22,12 +22,12 @@ spec:
         - containerPort: 5050
         volumeMounts:
         - mountPath: /dataset
-          name: prenet-dataset
+          name: deepod-dataset
 
       volumes:
-      - name: prenet-dataset
+      - name: deepod-dataset
         persistentVolumeClaim:
-          claimName: prenet-dataset-pvc
+          claimName: deepod-dataset-pvc
      
       nodeSelector:
         nodename: worker3
@@ -35,13 +35,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: prenet-server
+  name: deepod-server
   labels:
-    run: prenet-server
+    run: deepod-server
 spec:
   # type: LoadBalancer
   selector:
-    app: prenet-server
+    app: deepod-server
   ports:
   - port: 5050
     protocol: TCP
@@ -58,7 +58,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: prenet-dataset-pv
+  name: deepod-dataset-pv
 spec:
   capacity:
     storage: 5Gi
@@ -68,7 +68,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   hostPath:
-    path: "/pv/prenet-dataset"
+    path: "/pv/deepod-dataset"
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -81,7 +81,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: prenet-dataset-pvc
+  name: deepod-dataset-pvc
 spec:
   accessModes:
     - ReadWriteOnce
