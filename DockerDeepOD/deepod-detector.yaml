@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepod-detector-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deepod-server
+  template:
+    metadata:
+      labels:
+        app: deepod-server
+    spec:
+      containers:
+      - name: deepod-server
+        image: asture123/deepod-detector
+        env:
+
+    
+        ports:
+        - containerPort: 5050
+        volumeMounts:
+        - mountPath: /dataset
+          name: deepod-dataset
+
+      volumes:
+      - name: deepod-dataset
+        persistentVolumeClaim:
+          claimName: deepod-dataset-pvc
+     
+      nodeSelector:
+        nodename: worker3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepod-server
+  labels:
+    run: deepod-server
+spec:
+  # type: LoadBalancer
+  selector:
+    app: deepod-server
+  ports:
+  - port: 5050
+    protocol: TCP
+    targetPort: 5050
+    # nodePort: 32096
+    # name: http
+  # - port: 8920
+  #   protocol: TCP
+  #   targetPort: 8920
+  #   # nodePort: 32120
+  #   name: https
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: deepod-dataset-pv
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  hostPath:
+    path: "/pv/deepod-dataset"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - worker3
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: deepod-dataset-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-storage
+
+
+
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: emby-server-ingress
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#   - host: embymedia.com
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: emby-server
+#             port:
+#               number: 8096
+
+---

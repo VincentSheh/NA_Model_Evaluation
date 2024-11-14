@@ -4,7 +4,9 @@
 *.csv
 *.parquet
 node_modules/
+pycache/
 *.zip
+*.joblib
 /myenv
 /Dataset
-*.pkl
+*.pklgithub_token.txt
