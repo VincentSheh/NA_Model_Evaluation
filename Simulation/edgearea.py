@@ -2,6 +2,7 @@ import json
 import numpy as np
 import pandas as pd
 from resource_allocation import QLearningAgent
+max_cpu = 6.0
 with open("DARA.json", "r") as file:
     best_approx_decision_dict = json.load(file)
     
@@ -32,12 +33,12 @@ class EdgeArea:
     def __init__(self, video_cpu):
      
         self.vim = VIM(self)
-        self.ids = IDS(self, 6.0-video_cpu)
+        self.ids = IDS(self, max_cpu-video_cpu)
         self.server = VideoServer(self, video_cpu)
         self.current_timestep = 0
     def forward(self):
         self.current_timestep+=1
-        self.vim.forward(self.server.cur_info)
+        # self.vim.forward(self.server.cur_info)
         self.server.forward()
         self.ids.forward()
         
@@ -50,7 +51,7 @@ class IDS(object):
         # self.processing_speed = {}  # Processing speed for each attack type or variant
         #! self.processing_speed
         self.processing_speed = lambda x: 450*x - 100  # Minimum CPU = 0.5 #TODO: Add Noise 
-        self.accuracy = {"bonesi": 0.9, "goldeneye": 0.5, "hulk": 0.5}  # Accuracy for different attack variants
+        self.accuracy = {"bonesi": 0.9, "goldeneye": 0.9, "hulk": 0.9}  # Accuracy for different attack variants
         self.cur_quota = self.processing_speed(self.cpu_allocated)
 
     def detect(self, attack):
@@ -139,12 +140,12 @@ class VideoServer(object): # Edge Area Server
         # TODO: Round Robin on the atack reduction     
         ids = self.area.ids
         # print(ids.processing_speed)
-        print("Before", atk_config["old_intensity"])
-        if atk_config["old_intensity"] <= 0:
+        # print("Before", atk_config["old_intensity"])
+        if atk_config["old_intensity"] <= 0 or atk_config["name"] == "normal":
             atk_config["new_intensity"] = 0
         else:         
             atk_config["new_intensity"] = ids.detect(atk_config)
-        print("After", atk_config["new_intensity"])
+        # print("After", atk_config["new_intensity"])
         self.attack_config_list.append(atk_config) #TODO: Change this formula, Ranges from 0.0 to 1.0
         
     def get_qoe_video(self):
@@ -213,7 +214,7 @@ class VIM:
         # Get the updated CPU allocation
         updated_cpu = discrete_approx_decision(previous_intensity, previous_user)
         server.cpu_allocated = updated_cpu['best_cpu']
-        ids.cpu_allocated = 6.0 - updated_cpu['best_cpu']
+        ids.cpu_allocated = max_cpu - updated_cpu['best_cpu']
         # Print all relevant information
         print(f"Previous Intensity: {previous_intensity}, Previous User Count: {previous_user}")
         print(f"Updated CPU Allocation: {updated_cpu['best_cpu']}")
@@ -232,14 +233,14 @@ class VIM:
         video_cpu = self.agent.take_action(cur_info)  # Get new CPU allocation for video
         # video_cpu = round(video_cpu/0.5)*0.5
         # video_cpu = round(video_cpu/0.5)*0.5
-        ids_cpu = 6.0 - video_cpu  # IDS CPU based on remaining CPU capacity
+        ids_cpu = max_cpu - video_cpu  # IDS CPU based on remaining CPU capacity
         
         server = self.area.server
         ids = self.area.ids
         server.cpu_allocated = video_cpu
         ids.cpu_allocated = ids_cpu
         # Print the decision details
-        print(f'Updated CPU Allocation: Video CPU={cur_info["video_cpu"]}, IDS CPU={(6.0 - cur_info["video_cpu"])}, QoE={cur_info["qoe"]}')    
+        print(f'Updated CPU Allocation: Video CPU={cur_info["video_cpu"]}, IDS CPU={(max_cpu - cur_info["video_cpu"])}, QoE={cur_info["qoe"]}')    
     
     def forward(self, cur_info):
         # Append the information to previous_info DataFrame

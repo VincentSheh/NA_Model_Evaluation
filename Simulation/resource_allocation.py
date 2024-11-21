@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import random
-
+import json
 class QLearningAgent:
     def __init__(self, vim, cpu_range=(0.5, 5.5), step_size=0.5, learning_rate=0.1, discount_factor=0.9, exploration_rate=1.0, exploration_decay=0.995, exploration_commit_steps=1000):
         self.vim = vim
@@ -66,3 +66,44 @@ class QLearningAgent:
         video_cpu = action
         
         return video_cpu
+    
+    
+with open("DARA.json", "r") as file:
+    best_approx_decision_dict = json.load(file)
+with open("Optimal.json", "r") as file: 
+    optimal_decision_dict = json.load(file)
+    
+
+
+#!Used by VIM
+def discrete_approx_decision(intensity, n_streamer):
+    intensity_interval = 200
+    closest_intensity = round(intensity/intensity_interval)*intensity_interval
+    updated_cpu = best_approx_decision_dict[str((closest_intensity, n_streamer))]        
+    
+    return 
+def discrete_best_decision(intensity, n_streamer, atk_type):
+    intensity_interval = 200
+    closest_intensity = round(intensity/intensity_interval)*intensity_interval
+    updated_cpu = best_approx_decision_dict[str((atk_type, closest_intensity, n_streamer))]        
+    return 
+
+#!Used by GymEnv
+def resource_decision_baseline(cur_info):
+    previous_intensity = cur_info["ori_intensity"]
+    previous_user = cur_info["n_streamers"]
+    # Get the updated CPU allocation
+    intensity_interval = 200
+    closest_intensity = round(previous_intensity/intensity_interval)*intensity_interval
+    updated_cpu = best_approx_decision_dict[str((closest_intensity, previous_user))]    
+    return updated_cpu['best_cpu']
+
+def resource_decision_optimal(cur_info): 
+    previous_atk = cur_info["atk_type"]
+    previous_intensity = cur_info["ori_intensity"]
+    previous_user = cur_info["n_streamers"]
+    # Get the updated CPU allocation
+    intensity_interval = 200
+    closest_intensity = round(previous_intensity/intensity_interval)*intensity_interval
+    updated_cpu = optimal_decision_dict[str((previous_atk,closest_intensity, previous_user))]    
+    return updated_cpu['best_cpu']

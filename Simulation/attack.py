@@ -19,10 +19,10 @@ class AttackConfig(Enum):
     }
     GOLDENEYE = {
         "name": "goldeneye",
-        "alpha": 0.005,
-        "L_k": -0.1,
-        "beta_0_k": 0.2,
-        "beta_CPU_k":-0.2,
+        "alpha": 0.01,
+        "L_k": -0.02,
+        "beta_0_k": 0.5,
+        "beta_CPU_k":-0.4,
     }
     HULK = {
         "name": "hulk",
