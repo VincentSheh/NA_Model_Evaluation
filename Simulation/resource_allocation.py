@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import random
 import json
 class QLearningAgent:
@@ -68,7 +68,7 @@ class QLearningAgent:
         return video_cpu
     
     
-with open("DARA.json", "r") as file:
+with open("DARA_6.0.json", "r") as file:
     best_approx_decision_dict = json.load(file)
 with open("Optimal.json", "r") as file: 
     optimal_decision_dict = json.load(file)

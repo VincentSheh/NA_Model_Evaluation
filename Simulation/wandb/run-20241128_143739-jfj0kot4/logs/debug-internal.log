@@ -1,0 +1,20 @@
+{"time":"2024-11-28T14:37:41.270996+08:00","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-11-28T14:37:41.271052+08:00","level":"INFO","msg":"created symlink","path":"/Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241128_143739-jfj0kot4/logs/debug-core.log"}
+{"time":"2024-11-28T14:37:41.383871+08:00","level":"INFO","msg":"created new stream","id":"jfj0kot4"}
+{"time":"2024-11-28T14:37:41.38392+08:00","level":"INFO","msg":"stream: started","id":"jfj0kot4"}
+{"time":"2024-11-28T14:37:41.383925+08:00","level":"INFO","msg":"handler: started","stream_id":"jfj0kot4"}
+{"time":"2024-11-28T14:37:41.38396+08:00","level":"INFO","msg":"writer: Do: started","stream_id":"jfj0kot4"}
+{"time":"2024-11-28T14:37:41.38396+08:00","level":"INFO","msg":"sender: started","stream_id":"jfj0kot4"}
+{"time":"2024-11-28T14:37:41.45349+08:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-11-28T14:37:41.453524+08:00","level":"WARN","msg":"handleCodeSave: program relative path is empty"}
+{"time":"2024-11-28T14:37:41.453581+08:00","level":"ERROR","msg":"git repo not found","error":"repository does not exist"}
+{"time":"2024-11-28T14:37:52.16188+08:00","level":"INFO","msg":"tensorboard: no root directory after 10 seconds, using working directory"}
+{"time":"2024-11-28T14:44:52.181372+08:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-11-28T14:44:52.182532+08:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-11-28T14:44:52.769671+08:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-11-28T14:44:52.902614+08:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2024-11-28T14:44:53.914892+08:00","level":"INFO","msg":"stream: closing","id":"jfj0kot4"}
+{"time":"2024-11-28T14:44:53.914923+08:00","level":"INFO","msg":"handler: closed","stream_id":"jfj0kot4"}
+{"time":"2024-11-28T14:44:53.914934+08:00","level":"INFO","msg":"sender: closed","stream_id":"jfj0kot4"}
+{"time":"2024-11-28T14:44:53.914932+08:00","level":"INFO","msg":"writer: Close: closed","stream_id":"jfj0kot4"}
+{"time":"2024-11-28T14:44:53.915126+08:00","level":"INFO","msg":"stream: closed","id":"jfj0kot4"}

@@ -1,0 +1,16 @@
+{"time":"2024-12-04T14:25:07.847834+08:00","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-12-04T14:25:07.848307+08:00","level":"INFO","msg":"created symlink","path":"/Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241204_142507-hz7bobjm/logs/debug-core.log"}
+{"time":"2024-12-04T14:25:07.981175+08:00","level":"INFO","msg":"created new stream","id":"hz7bobjm"}
+{"time":"2024-12-04T14:25:07.981331+08:00","level":"INFO","msg":"stream: started","id":"hz7bobjm"}
+{"time":"2024-12-04T14:25:07.981426+08:00","level":"INFO","msg":"handler: started","stream_id":"hz7bobjm"}
+{"time":"2024-12-04T14:25:07.981748+08:00","level":"INFO","msg":"sender: started","stream_id":"hz7bobjm"}
+{"time":"2024-12-04T14:25:07.981428+08:00","level":"INFO","msg":"writer: Do: started","stream_id":"hz7bobjm"}
+{"time":"2024-12-04T14:25:07.995397+08:00","level":"INFO","msg":"api: retrying error","error":"Post \"http://localhost:8080/graphql\": dial tcp [::1]:8080: connect: connection refused"}
+{"time":"2024-12-04T14:25:10.230465+08:00","level":"INFO","msg":"api: retrying error","error":"Post \"http://localhost:8080/graphql\": dial tcp [::1]:8080: connect: connection refused"}
+{"time":"2024-12-04T14:25:14.430232+08:00","level":"INFO","msg":"api: retrying error","error":"Post \"http://localhost:8080/graphql\": dial tcp [::1]:8080: connect: connection refused"}
+{"time":"2024-12-04T14:25:23.414174+08:00","level":"INFO","msg":"api: retrying error","error":"Post \"http://localhost:8080/graphql\": dial tcp [::1]:8080: connect: connection refused"}
+{"time":"2024-12-04T14:25:43.015182+08:00","level":"INFO","msg":"api: retrying error","error":"Post \"http://localhost:8080/graphql\": dial tcp [::1]:8080: connect: connection refused"}
+{"time":"2024-12-04T14:26:18.518101+08:00","level":"INFO","msg":"api: retrying error","error":"Post \"http://localhost:8080/graphql\": dial tcp [::1]:8080: connect: connection refused"}
+{"time":"2024-12-04T14:27:18.527155+08:00","level":"INFO","msg":"api: retrying error","error":"Post \"http://localhost:8080/graphql\": dial tcp [::1]:8080: connect: connection refused"}
+{"time":"2024-12-04T14:28:18.529887+08:00","level":"INFO","msg":"api: retrying error","error":"Post \"http://localhost:8080/graphql\": dial tcp [::1]:8080: connect: connection refused"}
+{"time":"2024-12-04T14:29:18.533534+08:00","level":"INFO","msg":"api: retrying error","error":"Post \"http://localhost:8080/graphql\": dial tcp [::1]:8080: connect: connection refused"}

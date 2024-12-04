@@ -41,6 +41,8 @@ class EdgeArea:
         # self.vim.forward(self.server.cur_info)
         self.server.forward()
         self.ids.forward()
+    def reconfigure_resource(self, video_cpu):
+        pass #TODO: Reconfigure Resource Here
         
         
         
@@ -50,8 +52,9 @@ class IDS(object):
         self.cpu_allocated = cpu  # Initial CPU allocation for the IDS
         # self.processing_speed = {}  # Processing speed for each attack type or variant
         #! self.processing_speed
-        self.processing_speed = lambda x: 450*x - 100  # Minimum CPU = 0.5 #TODO: Add Noise 
-        self.accuracy = {"bonesi": 0.9, "goldeneye": 0.9, "hulk": 0.9}  # Accuracy for different attack variants
+        self.processing_speed = lambda x: 300*x - 100  # Minimum CPU = 0.5 #TODO: Add Noise and Accelerate for Different Types 
+        # self.accuracy = {"bonesi": 0.95, "goldeneye": 0.8, "hulk": 1.0}  # Accuracy for different attack variants
+        self.accuracy = {"bonesi": 1.0, "goldeneye": 1.0, "hulk": 1.0}  # Accuracy for different attack variants
         self.cur_quota = self.processing_speed(self.cpu_allocated)
 
     def detect(self, attack):
@@ -101,8 +104,8 @@ class VideoServer(object): # Edge Area Server
         self.cpu_allocated = cpu_allocated  # Total CPU capacity of the server        
         # self.ids = [IDS(6.0 - self.cpu_allocated)]
         self.current_cpu_usage = 0  # Current CPU usage
-        self.active_streamers = []  # List of active Streamer objects
-        self.active_attackers = []  
+        self.active_streamers = []  # ! Use Priority Queue to sort the load
+        self.active_attackers = []
         self.qoe_vs_n_user_params = {
             1: [0.97, -2.2782716980482065, 4.8802368476587255],
             2: [0.97, -3.8873078667967476, 5.175670954212056],
@@ -174,7 +177,7 @@ class VideoServer(object): # Edge Area Server
         if len(self.active_streamers) == 0:
           return 1
         qoe_video = self.get_qoe_video().mean() 
-        aggregate_attack_impact = self.get_atk_impact()        
+        aggregate_attack_impact = self.get_atk_impact()   
         final_qoe = max(0,qoe_video*(1 - aggregate_attack_impact)) 
         
         # Record Current Condition and Performance
@@ -256,6 +259,10 @@ class VIM:
 class LMM:
     pass
     #TODO:
+    
+class Orchestrator:
+    def __init__(self):
+        pass
     
 
         

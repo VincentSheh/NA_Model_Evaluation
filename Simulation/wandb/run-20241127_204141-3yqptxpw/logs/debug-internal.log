@@ -1,0 +1,20 @@
+{"time":"2024-11-27T20:41:42.517018+08:00","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-11-27T20:41:42.517139+08:00","level":"INFO","msg":"created symlink","path":"/Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241127_204141-3yqptxpw/logs/debug-core.log"}
+{"time":"2024-11-27T20:41:42.626414+08:00","level":"INFO","msg":"created new stream","id":"3yqptxpw"}
+{"time":"2024-11-27T20:41:42.62645+08:00","level":"INFO","msg":"stream: started","id":"3yqptxpw"}
+{"time":"2024-11-27T20:41:42.626459+08:00","level":"INFO","msg":"handler: started","stream_id":"3yqptxpw"}
+{"time":"2024-11-27T20:41:42.626481+08:00","level":"INFO","msg":"writer: Do: started","stream_id":"3yqptxpw"}
+{"time":"2024-11-27T20:41:42.626461+08:00","level":"INFO","msg":"sender: started","stream_id":"3yqptxpw"}
+{"time":"2024-11-27T20:41:42.690278+08:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-11-27T20:41:42.6903+08:00","level":"WARN","msg":"handleCodeSave: program relative path is empty"}
+{"time":"2024-11-27T20:41:42.690338+08:00","level":"ERROR","msg":"git repo not found","error":"repository does not exist"}
+{"time":"2024-11-27T20:41:53.329232+08:00","level":"INFO","msg":"tensorboard: no root directory after 10 seconds, using working directory"}
+{"time":"2024-11-27T20:42:43.723866+08:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-11-27T20:42:43.726448+08:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-11-27T20:42:44.139128+08:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-11-27T20:42:44.182065+08:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2024-11-27T20:42:45.194376+08:00","level":"INFO","msg":"stream: closing","id":"3yqptxpw"}
+{"time":"2024-11-27T20:42:45.194411+08:00","level":"INFO","msg":"handler: closed","stream_id":"3yqptxpw"}
+{"time":"2024-11-27T20:42:45.194428+08:00","level":"INFO","msg":"writer: Close: closed","stream_id":"3yqptxpw"}
+{"time":"2024-11-27T20:42:45.194443+08:00","level":"INFO","msg":"sender: closed","stream_id":"3yqptxpw"}
+{"time":"2024-11-27T20:42:45.195284+08:00","level":"INFO","msg":"stream: closed","id":"3yqptxpw"}

@@ -1,0 +1,19 @@
+{"time":"2024-11-27T19:29:54.501707+08:00","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-11-27T19:29:54.501742+08:00","level":"INFO","msg":"created symlink","path":"/Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241127_192954-8nlvq0nc/logs/debug-core.log"}
+{"time":"2024-11-27T19:29:54.611798+08:00","level":"INFO","msg":"created new stream","id":"8nlvq0nc"}
+{"time":"2024-11-27T19:29:54.611853+08:00","level":"INFO","msg":"handler: started","stream_id":"8nlvq0nc"}
+{"time":"2024-11-27T19:29:54.611857+08:00","level":"INFO","msg":"stream: started","id":"8nlvq0nc"}
+{"time":"2024-11-27T19:29:54.611863+08:00","level":"INFO","msg":"writer: Do: started","stream_id":"8nlvq0nc"}
+{"time":"2024-11-27T19:29:54.61189+08:00","level":"INFO","msg":"sender: started","stream_id":"8nlvq0nc"}
+{"time":"2024-11-27T19:29:54.715425+08:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-11-27T19:29:54.715463+08:00","level":"WARN","msg":"handleCodeSave: program relative path is empty"}
+{"time":"2024-11-27T19:29:54.715517+08:00","level":"ERROR","msg":"git repo not found","error":"repository does not exist"}
+{"time":"2024-11-27T19:30:15.658761+08:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-11-27T19:30:15.659131+08:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-11-27T19:30:15.841019+08:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-11-27T19:30:15.861787+08:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2024-11-27T19:30:16.869958+08:00","level":"INFO","msg":"stream: closing","id":"8nlvq0nc"}
+{"time":"2024-11-27T19:30:16.86999+08:00","level":"INFO","msg":"handler: closed","stream_id":"8nlvq0nc"}
+{"time":"2024-11-27T19:30:16.870001+08:00","level":"INFO","msg":"writer: Close: closed","stream_id":"8nlvq0nc"}
+{"time":"2024-11-27T19:30:16.870036+08:00","level":"INFO","msg":"sender: closed","stream_id":"8nlvq0nc"}
+{"time":"2024-11-27T19:30:16.870123+08:00","level":"INFO","msg":"stream: closed","id":"8nlvq0nc"}
