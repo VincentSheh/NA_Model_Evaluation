@@ -1,0 +1,12 @@
+./dqn_logs
+./dqn_logs
+./models
+./ppo_logs
+./ppo_lstm_logs
+./tb_logs
+./wandb
+./gym
+*.pkl
+*.csv
+*.json
+*.zip

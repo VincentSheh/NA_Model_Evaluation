@@ -4,8 +4,10 @@
 *.csv
 *.parquet
 node_modules/
+pycache/
 *.zip
+*.joblib
 /myenv
 /Dataset
-*.pkl
-*github_token.txt
+*.pklgithub_token.txt
+github_token.txt

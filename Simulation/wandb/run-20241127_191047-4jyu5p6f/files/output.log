@@ -1,0 +1,54 @@
+Using cpu device
+Logging to ./ppo_lstm_logs/RecurrentPPO_1
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 15.9     |
+|    ep_rew_mean     | 15.9     |
+| time/              |          |
+|    fps             | 74       |
+|    iterations      | 1        |
+|    time_elapsed    | 3        |
+|    total_timesteps | 256      |
+---------------------------------
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 18.6        |
+|    ep_rew_mean          | 18.6        |
+| time/                   |             |
+|    fps                  | 108         |
+|    iterations           | 2           |
+|    time_elapsed         | 4           |
+|    total_timesteps      | 512         |
+| train/                  |             |
+|    approx_kl            | 0.001382543 |
+|    clip_fraction        | 0           |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.693      |
+|    explained_variance   | -0.00083    |
+|    learning_rate        | 0.0005      |
+|    loss                 | 12.1        |
+|    n_updates            | 10          |
+|    policy_gradient_loss | -0.00179    |
+|    value_loss           | 32.6        |
+-----------------------------------------
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 19          |
+|    ep_rew_mean          | 19          |
+| time/                   |             |
+|    fps                  | 122         |
+|    iterations           | 3           |
+|    time_elapsed         | 6           |
+|    total_timesteps      | 768         |
+| train/                  |             |
+|    approx_kl            | 0.017093718 |
+|    clip_fraction        | 0.0238      |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.681      |
+|    explained_variance   | -0.135      |
+|    learning_rate        | 0.0005      |
+|    loss                 | 11.1        |
+|    n_updates            | 20          |
+|    policy_gradient_loss | -0.00264    |
+|    value_loss           | 43.2        |
+-----------------------------------------

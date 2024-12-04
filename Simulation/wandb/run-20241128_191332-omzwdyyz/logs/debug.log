@@ -1,0 +1,85 @@
+2024-11-28 19:13:32,958 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Current SDK version is 0.18.7
+2024-11-28 19:13:32,959 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Configure stats pid to 82238
+2024-11-28 19:13:32,959 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Loading settings from /Users/shehvincent/.config/wandb/settings
+2024-11-28 19:13:32,959 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Loading settings from /Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/settings
+2024-11-28 19:13:32,959 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Loading settings from environment variables: {}
+2024-11-28 19:13:32,959 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Applying setup settings: {'mode': 'online', '_disable_service': None}
+2024-11-28 19:13:32,959 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Inferring run settings from compute environment: {'program': '<python with no main file>'}
+2024-11-28 19:13:32,959 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Applying login settings: {}
+2024-11-28 19:13:32,959 INFO    MainThread:82238 [wandb_init.py:_log_setup():533] Logging user logs to /Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241128_191332-omzwdyyz/logs/debug.log
+2024-11-28 19:13:32,959 INFO    MainThread:82238 [wandb_init.py:_log_setup():534] Logging internal logs to /Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241128_191332-omzwdyyz/logs/debug-internal.log
+2024-11-28 19:13:32,960 INFO    MainThread:82238 [wandb_init.py:init():619] calling init triggers
+2024-11-28 19:13:32,960 INFO    MainThread:82238 [wandb_init.py:init():626] wandb.init called with sweep_config: {}
+config: {'learning_rate': 0.0005, 'batch_size': 64, 'gamma': 0.99, 'n_steps': 256, 'total_timesteps': 1000000}
+2024-11-28 19:13:32,960 INFO    MainThread:82238 [wandb_init.py:init():644] re-initializing run, found existing run on stack: i7iza6tw
+2024-11-28 19:13:32,961 INFO    MainThread:82238 [wandb_run.py:_finish():2155] finishing run vincent/dqn-project/i7iza6tw
+2024-11-28 19:13:32,961 INFO    MainThread:82238 [wandb_run.py:_atexit_cleanup():2420] got exitcode: 0
+2024-11-28 19:13:32,962 INFO    MainThread:82238 [wandb_run.py:_restore():2402] restore
+2024-11-28 19:13:32,962 INFO    MainThread:82238 [wandb_run.py:_restore():2408] restore done
+2024-11-28 19:13:34,630 WARNING MainThread:82238 [wandb_init.py:init():1260] interrupted
+Traceback (most recent call last):
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 1256, in init
+    return wi.init()
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 654, in init
+    latest_run.finish()
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 451, in wrapper
+    return func(self, *args, **kwargs)
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 393, in wrapper
+    return func(self, *args, **kwargs)
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2149, in finish
+    return self._finish(exit_code)
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2179, in _finish
+    self._atexit_cleanup(exit_code=exit_code)
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2432, in _atexit_cleanup
+    self._on_finish()
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2720, in _on_finish
+    self._backend.cleanup()
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/backend/backend.py", line 213, in cleanup
+    self.interface.join()
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/interface/interface_shared.py", line 537, in join
+    self._router.join()
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/interface/router.py", line 98, in join
+    self._thread.join()
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/threading.py", line 1060, in join
+    self._wait_for_tstate_lock()
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/threading.py", line 1080, in _wait_for_tstate_lock
+    if lock.acquire(block, timeout):
+KeyboardInterrupt
+2024-12-04 14:25:07,792 INFO    MainThread:82238 [wandb_settings.py:_apply_login():1989] Applying login settings: {}
+2024-12-04 14:25:07,808 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Current SDK version is 0.18.7
+2024-12-04 14:25:07,809 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Configure stats pid to 82238
+2024-12-04 14:25:07,809 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Loading settings from /Users/shehvincent/.config/wandb/settings
+2024-12-04 14:25:07,809 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Loading settings from /Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/settings
+2024-12-04 14:25:07,809 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Loading settings from environment variables: {}
+2024-12-04 14:25:07,809 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Applying setup settings: {'mode': 'online', '_disable_service': None}
+2024-12-04 14:25:07,809 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Inferring run settings from compute environment: {'program': '<python with no main file>'}
+2024-12-04 14:25:07,809 INFO    MainThread:82238 [wandb_setup.py:_flush():79] Applying login settings: {}
+2024-12-04 14:25:07,810 INFO    MainThread:82238 [wandb_init.py:_log_setup():533] Logging user logs to /Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241204_142507-hz7bobjm/logs/debug.log
+2024-12-04 14:25:07,810 INFO    MainThread:82238 [wandb_init.py:_log_setup():534] Logging internal logs to /Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241204_142507-hz7bobjm/logs/debug-internal.log
+2024-12-04 14:25:07,810 INFO    MainThread:82238 [wandb_init.py:init():619] calling init triggers
+2024-12-04 14:25:07,810 INFO    MainThread:82238 [wandb_init.py:init():626] wandb.init called with sweep_config: {}
+config: {'learning_rate': 0.0005, 'batch_size': 64, 'gamma': 0.99, 'n_steps': 256, 'total_timesteps': 1000000}
+2024-12-04 14:25:07,810 INFO    MainThread:82238 [wandb_init.py:init():669] starting backend
+2024-12-04 14:25:07,810 INFO    MainThread:82238 [wandb_init.py:init():673] sending inform_init request
+2024-12-04 14:25:07,821 INFO    MainThread:82238 [backend.py:_multiprocessing_setup():104] multiprocessing start_methods=spawn,fork,forkserver, using: spawn
+2024-12-04 14:25:07,826 INFO    MainThread:82238 [wandb_init.py:init():686] backend started and connected
+2024-12-04 14:25:07,862 INFO    MainThread:82238 [wandb_run.py:_label_probe_notebook():1339] probe notebook
+2024-12-04 14:25:07,866 INFO    MainThread:82238 [wandb_init.py:init():781] updated telemetry
+2024-12-04 14:25:07,985 INFO    MainThread:82238 [wandb_init.py:init():814] communicating run to backend with 300.0 second timeout
+2024-12-04 14:25:11,349 WARNING MainThread:82238 [wandb_init.py:init():1260] interrupted
+Traceback (most recent call last):
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 1256, in init
+    return wi.init()
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 817, in init
+    result = run_init_handle.wait(
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/lib/mailbox.py", line 279, in wait
+    found, abandoned = self._slot._get_and_clear(timeout=wait_timeout)
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/lib/mailbox.py", line 126, in _get_and_clear
+    if self._wait(timeout=timeout):
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/site-packages/wandb/sdk/lib/mailbox.py", line 122, in _wait
+    return self._event.wait(timeout=timeout)
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/threading.py", line 581, in wait
+    signaled = self._cond.wait(timeout)
+  File "/Users/shehvincent/anaconda3/envs/edge_computing/lib/python3.9/threading.py", line 316, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt
