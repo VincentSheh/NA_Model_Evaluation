@@ -12,25 +12,32 @@ class AttackConfig(Enum):
     }
     BONESI = {
         "name": "bonesi",
-        "alpha": 0.005,
+        "alpha": 1.0,
         "L_k": -0.2,
         "beta_0_k": 0.2,
-        "beta_CPU_k":-0.6,
+        "beta_CPU_k":-0.9,
     }
     GOLDENEYE = {
         "name": "goldeneye",
-        "alpha": 0.01,
-        "L_k": -0.02,
+        "alpha": 1.0,
+        "L_k": -0.00,
         "beta_0_k": 0.5,
         "beta_CPU_k":-0.4,
     }
     HULK = {
         "name": "hulk",
-        "alpha": 0.015,
-        "L_k": -0.6,
-        "beta_0_k": 0.2,
-        "beta_CPU_k":-0.3,
+        "alpha": 1.0,
+        "L_k": -0.5,
+        "beta_0_k": 0.0,
+        "beta_CPU_k":-0.0,
     }
+    def __init__(self, properties):
+        self.properties = properties
+        # Optionally
+        self.alpha = properties["alpha"]
+        self.L_k = properties["L_k"]
+        self.beta_0_k = properties["beta_0_k"]
+        self.beta_CPU_k = properties["beta_CPU_k"]        
     def __init__(self, properties):
         self.properties = properties
         # Optionally
@@ -95,3 +102,33 @@ class Attacker:
         else:
             self.state = None  # Indicates that the attack sequence has ended        
         
+        
+        
+    # NORMAL = {
+    #     "name": "normal",
+    #     "alpha": 0,
+    #     "L_k": -1.0,
+    #     "beta_0_k": 1.0,
+    #     "beta_CPU_k":-1.0,
+    # }
+    # BONESI = {
+    #     "name": "bonesi",
+    #     "alpha": 0.005,
+    #     "L_k": -0.2,
+    #     "beta_0_k": 0.2,
+    #     "beta_CPU_k":-0.6,
+    # }
+    # GOLDENEYE = {
+    #     "name": "goldeneye",
+    #     "alpha": 0.01,
+    #     "L_k": -0.02,
+    #     "beta_0_k": 0.5,
+    #     "beta_CPU_k":-0.4,
+    # }
+    # HULK = {
+    #     "name": "hulk",
+    #     "alpha": 0.015,
+    #     "L_k": -0.6,
+    #     "beta_0_k": 0.2,
+    #     "beta_CPU_k":-0.3,
+    # }        

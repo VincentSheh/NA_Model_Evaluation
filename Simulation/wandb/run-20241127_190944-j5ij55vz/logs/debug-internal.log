@@ -1,9 +1,0 @@
-{"time":"2024-11-27T19:09:44.27288+08:00","level":"INFO","msg":"using version","core version":"0.18.7"}
-{"time":"2024-11-27T19:09:44.272926+08:00","level":"INFO","msg":"created symlink","path":"/Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241127_190944-j5ij55vz/logs/debug-core.log"}
-{"time":"2024-11-27T19:09:44.386688+08:00","level":"INFO","msg":"created new stream","id":"j5ij55vz"}
-{"time":"2024-11-27T19:09:44.38673+08:00","level":"INFO","msg":"stream: started","id":"j5ij55vz"}
-{"time":"2024-11-27T19:09:44.386738+08:00","level":"INFO","msg":"handler: started","stream_id":"j5ij55vz"}
-{"time":"2024-11-27T19:09:44.386784+08:00","level":"INFO","msg":"writer: Do: started","stream_id":"j5ij55vz"}
-{"time":"2024-11-27T19:09:44.38679+08:00","level":"INFO","msg":"sender: started","stream_id":"j5ij55vz"}
-{"time":"2024-11-27T19:09:44.614551+08:00","level":"ERROR","msg":"HTTP error","status":404,"method":"POST","url":"https://api.wandb.ai/graphql"}
-{"time":"2024-11-27T19:09:44.614612+08:00","level":"ERROR","msg":"sender: upsertRun:","error":"failed to upsert bucket: returned error 404 Not Found: {\"errors\":[{\"message\":\"entity your_username not found during upsertBucket\",\"path\":[\"upsertBucket\"]}],\"data\":{\"upsertBucket\":null}}"}

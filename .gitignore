@@ -11,3 +11,5 @@ pycache/
 /Dataset
 *.pklgithub_token.txt
 github_token.txt
+/Simulation/tb_logs/
+/Simulation/wandb/

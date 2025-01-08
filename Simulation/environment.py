@@ -5,58 +5,10 @@ import random
 import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
+from behavior import generate_attack_intensity, generate_hsmm
+from behavior import user_behavior_from_csv
+from itertools import permutations
 
-def generate_attack_intensity(time_steps, baseline, fluctuation, spike_prob, spike_intensity, 
-                                             persistence_coeffs, decay_factor, drop_prob, drop_intensity):
-    # Initialize intensity array with the first three values set to baseline
-    intensity = np.full(time_steps, baseline)
-    
-    # Generate time series with AR(3) process with decay and drop probability
-    for t in range(3, time_steps):
-        # AR(3) process with decay factor
-        intensity[t] = (
-            persistence_coeffs[0] * intensity[t - 1] +
-            persistence_coeffs[1] * intensity[t - 2] +
-            persistence_coeffs[2] * intensity[t - 3] +
-            (1 - sum(persistence_coeffs)) * baseline +
-            np.random.normal(0, fluctuation)
-        )
-        
-        # Apply decay factor to gradually reduce intensity toward baseline
-        # intensity[t] *= (1 - decay_factor)
-        
-        # Add random spikes
-        if np.random.rand() < spike_prob:
-            intensity[t] += spike_intensity
-        
-        # Randomly drop the intensity with a certain probability
-        if np.random.rand() < drop_prob:
-            intensity[t] -= drop_intensity
-            # Ensure the intensity does not go below zero
-            intensity[t] = max(intensity[t], baseline)
-        intensity[t] = max(0, intensity[t])
-        intensity[t] = min(2000, intensity[t])
-
-    return intensity
-
-
-
-# atk_states = ["NoAtk", "DDoS", "SYN Flood", "HTTP Flood"]
-atk_states = ["NoAtk", "bonesi", "goldeneye", "hulk"]
-# atk_states = ["NoAtk", "bonesi", "bonesi", "bonesi"]
-# atk_states = ["NoAtk", "hulk", "hulk", "hulk"]
-atk_duration_means = [5, 3, 2, 4]  # mean duration for each state (Poisson distribution)
-atk_transition_matrix = np.array(  [[0.6, 0.1, 0.15, 0.15],  # No Attack
-                                    [0.1, 0.7, 0.1, 0.1],  # DDoS
-                                    [0.1, 0.1, 0.7, 0.1],  # SYN Flood
-                                    [0.1, 0.1, 0.2, 0.6]])  # HTTP Flood   
-
-stream_states = [0, 1] #0: Idle, #1: Streaming
-stream_duration_means = [20, 30]  # mean duration for each state (Poisson distribution)
-stream_transition_matrix = np.array([[0.3, 0.7],  # Idle
-                                     [0.8, 0.2]])  # Streaming
-# stream_transition_matrix = np.array([[0.0, 1.0],  # Idle
-#                                      [0.0, 1.0]])  # Streaming
 
 # Attack Intensity Parameters
 baseline_intensity = 700
@@ -68,42 +20,28 @@ decay_factor = 0.00 # Decay factor to bring intensity down gradually
 drop_prob = 0.00  # Probability of a sudden drop in intensity
 drop_intensity = 100  # Amount by which intensity drops if drop event occurs
 
-def generate_hsmm(n_steps, states, duration_means, transition_matrix, plot=False):
-    def simulate_duration(mean_duration):
-        return np.random.poisson(mean_duration)    
-    def select_next_state(current_state):
-        return np.random.choice(states, p=transition_matrix[states.index(current_state)])
 
-     
-    current_state = random.choice(states)  # randomly choose initial state
-    state_sequence = [current_state]  # keep track of the states over time
-    duration_in_current_state = simulate_duration(duration_means[states.index(current_state)])
-    time_in_state = 0  # initialize time spent in the current state
-    # Simulate HSMM process with "No Attack" state
-    for t in range(1, n_steps):
-        if time_in_state < duration_in_current_state:
-            # Stay in the current state
-            state_sequence.append(current_state)
-            time_in_state += 1
-        else:
-            # Transition to the next state
-            current_state = select_next_state(current_state)
-            state_sequence.append(current_state)
-            duration_in_current_state = simulate_duration(duration_means[states.index(current_state)])
-            time_in_state = 1  # Reset time in the new state    
-    if plot:
-        # Plot the sequence of states over time
-        plt.figure(figsize=(20, 3))
-        plt.plot(range(n_steps), state_sequence, marker='o')
-        plt.yticks(range(len(states)), states)
-        plt.title('Hidden Semi-Markov Model')
-        plt.xlabel('Time Step')
-        plt.ylabel('Attack Variant')
-        plt.grid(True)
-        plt.show()        
+atk_states = ["NoAtk", "bonesi", "goldeneye", "hulk"]
+# atk_states = ["NoAtk", "bonesi", "bonesi", "bonesi"]
+# atk_states = ["NoAtk", "hulk", "hulk", "hulk"]
+# atk_duration_means = [5, 3, 2, 4]  # mean duration for each state (Poisson distribution)
+# atk_transition_matrix = np.array(  [[0.6, 0.1, 0.15, 0.15],  # No Attack
+#                                     [0.1, 0.7, 0.1, 0.1],  # DDoS
+#                                     [0.1, 0.1, 0.7, 0.1],  # SYN Flood
+#                                     [0.1, 0.1, 0.2, 0.6]])  # HTTP Flood   
 
-    return state_sequence
+atk_duration_means = np.array([10, 3, 6, 8])*30  # mean duration for each state (Poisson distribution)
+atk_transition_matrix = np.array(  [[0.5, 0.2, 0.15, 0.15],  # No Attack
+                                    [0.8, 0.2, 0.0, 0.0],  # DDoS
+                                    [0.8, 0.0, 0.2, 0.0],  # SYN Flood
+                                    [0.8, 0.0, 0.0, 0.2]])  # HTTP Flood   run_for = 10_000
 
+# stream_states = [0, 1] #0: Idle, #1: Streaming
+# stream_duration_means = [20, 30]  # mean duration for each state (Poisson distribution)
+# stream_transition_matrix = np.array([[0.3, 0.7],  # Idle
+#                                      [0.8, 0.2]])  # Streaming
+# # stream_transition_matrix = np.array([[0.0, 1.0],  # Idle
+# #                                      [0.0, 1.0]])  # Streaming
 
 
 class Environment:
@@ -111,8 +49,6 @@ class Environment:
         
         self.global_qoe_list = []   #Average QOE of all Edge Areas !
         self.user_count_list = np.zeros(run_for)
-        self.cpu_decision_list = []
-        self.atk_intensity_list = [] #TODO: Change to Global
         self.area_dict = {}
         #TODO Model Streamer Interactions with server (Arrival And Departure)
         self.seed = seed  # Seed for reproducibility
@@ -121,9 +57,12 @@ class Environment:
         self.cpu_allocated = cpu_capacity
         self.current_timestep = 0  # Initialize timestep counter
         self.run_for = run_for  # Total number of timesteps to simulate
+        self.streamer_type = ["biggo", "youtube", "steamtv"]
+
+        
     def initialize_agent(self, num_area, num_streamers, num_attackers):
         # num_area=3
-        num_streamers = [6]*num_area #Depending on num_server
+        num_streamers = [num_streamers]*num_area #Depending on num_server
         num_attackers = [1]*num_area #Depending on num_attackers
         # num_streamers = [num_streamers]
         # num_attackers = [num_attackers]
@@ -132,11 +71,19 @@ class Environment:
             streamers = []
             attackers = []
             aggregate_state_sequence = np.zeros(self.run_for)  
+            active_streamers = user_behavior_from_csv(self.streamer_type[i], self.run_for)
             for j in range(num_streamers[i]): #Initialize streamers
-                hsmm_states = generate_hsmm(self.run_for, stream_states, stream_duration_means, stream_transition_matrix)
-
-                streamers.append(Streamer(j, hsmm_states))     
-                aggregate_state_sequence += hsmm_states
+                # hsmm_states = generate_hsmm(self.run_for, stream_states, stream_duration_means, stream_transition_matrix)
+                # streamers.append(Streamer(j, hsmm_states))     
+                # aggregate_state_sequence += hsmm_states
+                
+                #* Updated
+                streamer_state = np.ones_like(active_streamers)
+                active_streamers = active_streamers - 1
+                streamer_state[active_streamers < 0] = 0
+                streamers.append(Streamer(j, streamer_state))     
+                aggregate_state_sequence += streamer_state[:self.run_for]
+                
             self.user_count_list += aggregate_state_sequence     
                   
             for j in range(num_attackers[i]): #Initialize Attackers
@@ -192,10 +139,12 @@ class Environment:
                     
         #? Update Agent
         #TODO: Move to Orchestrator Class
-        global_states = np.zeros((len(self.area_dict), 4)) 
-        
+        # global_states = np.zeros((len(self.area_dict), 4)) 
+        global_states = np.zeros((len(self.area_dict), 7)) 
+        tb_log = {} # {Edge_Area1: {cpu_allocation, total_user (with offloaded), total_defense}}
         #Variables to for Task Offloading
         streamer_counts = []
+        cpu_list = []
         remaining_intensity = []
         remaining_quotas = []
         # Assign Users and Attackers to Nearest Edge Server
@@ -212,6 +161,10 @@ class Environment:
                 if atk_intensity > 0:                    
                     atk_intensity = atk_intensity * ids.accuracy[atk_state.value["name"]]
                 remaining_atks = max(0,atk_intensity - ids.cur_quota) #Current Quota before Utilized by detection
+                #* For Logging To Global States
+                atk_L = atk_state.value["L_k"]
+                atk_beta_0 = atk_state.value["beta_0_k"]
+                atk_beta_CPU = atk_state.value["beta_CPU_k"]
                     
                 #! Moved from calculated_qoe()    
                 attack.start(server) #IDS is Called Here
@@ -223,20 +176,22 @@ class Environment:
                 #! Moved from calculated_qoe()
                 if streamer.state == 1:
                     streamer.start_stream(server)               
-            global_states[i][0] = atk_intensity / 2000 #! Max Intensity shouldn't be a constant
-            global_states[i][1] = active_streamer / 6
-            
+            global_states[i][0] = active_streamer / 10
+            global_states[i][1] = atk_intensity / 2000 #! Max Intensity shouldn't be a constant
+            global_states[i][2] = atk_L
+            global_states[i][3] = atk_beta_0
+            global_states[i][4] = atk_beta_CPU
             streamer_counts.append(active_streamer)
+            cpu_list.append(server.cpu_allocated)
             # remaining_quotas.append((ids.cur_quota, ids.accuracy)) #Get the Remaining Defense Quota of each edge area
             remaining_quotas.append((ids.cur_quota, ids.accuracy)) #Get the Remaining Defense Quota of each edge area
             remaining_intensity.append(remaining_atks)
 
                         
-        #? Perform Task Offloading for Streamers
+        #* Perform Task Offloading for Streamers
         #TODO: Get the area that is in reasonable range
-        #TODO: Normalize according to the CPU Capacity
-        max_idx = np.argmax(streamer_counts)
-        min_idx = np.argmin(streamer_counts)        
+        max_idx = np.argmax(np.array(streamer_counts)/np.array(cpu_list))    
+        min_idx = np.argmin(np.array(streamer_counts)/np.array(cpu_list))        
         while(len(streamer_counts)>1 and streamer_counts[max_idx] > streamer_counts[min_idx] + 1):
             # print(streamer_counts)
 
@@ -246,17 +201,19 @@ class Environment:
                     self.area_dict[min_idx]['area'].server.active_streamers.append(-1)
                     streamer_counts[max_idx]-=1
                     streamer_counts[min_idx]+=1
+
                     
                 except IndexError as e:
                     print(f"Error during task offloading: {e}")
+                    print(streamer_counts)
+                    print(self.area_dict[max_idx]['area'].server.active_streamers)                    
                     break
             max_idx = np.argmax(streamer_counts)
             min_idx = np.argmin(streamer_counts)
-        # print("FINAL", streamer_counts)
         
-        #? Perform Task Offloading for Defense Task 
-        # print("Previously: ", remaining_intensity, remaining_quotas)
-        #Method 1 - Offload Aiming Balance
+        #* Perform Task Offloading for Defense Task 
+        
+        #* Method 1 - Offload Aiming Balance
         total_quota = sum([quota[0] for quota in remaining_quotas]) #remaining_quotas is tuple of (quota, acc)
         total_atk = sum(remaining_intensity)
         # Get z = D/n'
@@ -296,15 +253,62 @@ class Environment:
         # print(total_allocation, defense_allocation)
         # print(new_atk_list)
         #TODO: Method 2 - Offload to nearest Edge Area
-        self.current_timestep += 1
-        return global_states, atk_state
+        
+        #* Log into Tensor Board
+        for i, edge_area in self.area_dict.items():
+            server = edge_area['area'].server
+            ids = edge_area['area'].ids    
+            atk_config = server.attack_config_list[0]
+
+            tb_log[f"Edge_Area_{i}/video_cpu"] = server.cpu_allocated
+            # tb_log[f"Edge_Area_{i}/total_users"] = streamer_counts[i]
+            tb_log[f"Edge_Area_{i}/total_users"] = len(server.active_streamers)
+            tb_log[f"Edge_Area_{i}/final_atk_intensity"] = atk_config["new_intensity"]
+            # break
+        
+        return tb_log, global_states, atk_state
 
     def update_timestep(self):
         self.start_new_timestep()
         self.calculate_qoe()
         # self.resource_decision()
         # self.start_new_timestep_controled()
-    
+    def start_new_timestep_controlled(self):
+        max_qoe = 0
+        best_cpu = [0,0,0]
+        for cpu_list in permutations(np.arange(0.5, self.cpu_allocated, 0.5), 3): # Try all different CPU Configuration
+            for i, edge_area in self.area_dict.items(): # Find the best area
+                edge_area["area"].server.cpu_allocated = cpu_list[i]
+                edge_area["area"].ids.cpu_allocated = 6.0 - cpu_list[i]
+            # Start Timestep
+            self.start_new_timestep()
+            # Obtain QoE and Update Max Configurations
+            for i, edge_area in self.area_dict.items():
+                server = edge_area['area'].server            
+            mean_qoe = np.mean([edge_area["area"].server.calculate_qoe() for i, edge_area in self.area_dict.items()])
+            if max_qoe < mean_qoe:
+                max_qoe = mean_qoe
+                best_cpu = cpu_list
+            # Reset the Timestep and Repeat
+            for i, edge_area in self.area_dict.items():
+                server = edge_area['area'].server
+                server.forward()
+                ids = edge_area['area'].ids    
+                ids.forward()
+
+                for attack in edge_area['attackers']: #Initiate the Attack Task
+                    attack.time_elapsed-=1
+                for streamer in edge_area['streamers']:
+                    streamer.time_elapsed-=1
+                    
+        #? Start New Timestep with the Best CPU Configuration
+        for i, edge_area in self.area_dict.items():
+            edge_area["area"].server.cpu_allocated = best_cpu[i]
+            edge_area["area"].ids.cpu_allocated = 6.0 - best_cpu[i]
+        #* Return back to the step function and run normally
+        return self.start_new_timestep()
+        
+        
     def plot_qoe(self, ma_window_size = 10):
         def calculate_moving_average(data, window_size=10):
             """
@@ -351,13 +355,12 @@ class Environment:
                 ax3.set_ylabel("Attack State", color="tab:red")
                 ax3.tick_params(axis="y", labelcolor="tab:red")
                 ax3.legend(loc="upper center")        
-
-                ax3.set_xlim(max(0, len(qoe_list) - 2000), len(qoe_list))      
+                ax3.set_xlim(max(0), len(qoe_list))      
 
             except:
                 pass
-            ax1.set_xlim(max(0, len(qoe_list) - 2000), len(qoe_list))      
-            ax2.set_xlim(max(0, len(qoe_list) - 2000), len(qoe_list))      
+            ax1.set_xlim(0, len(qoe_list))     
+            ax2.set_xlim(0, len(qoe_list))
             # Add legends and title
             fig.suptitle("QoE and Number of Active Users Over Time")
             fig.tight_layout()

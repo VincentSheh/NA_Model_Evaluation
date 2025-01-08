@@ -1,9 +1,0 @@
-{"time":"2024-11-27T19:12:50.488722+08:00","level":"INFO","msg":"using version","core version":"0.18.7"}
-{"time":"2024-11-27T19:12:50.488756+08:00","level":"INFO","msg":"created symlink","path":"/Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241127_191250-z9le7cv9/logs/debug-core.log"}
-{"time":"2024-11-27T19:12:50.597277+08:00","level":"INFO","msg":"created new stream","id":"z9le7cv9"}
-{"time":"2024-11-27T19:12:50.597324+08:00","level":"INFO","msg":"stream: started","id":"z9le7cv9"}
-{"time":"2024-11-27T19:12:50.597382+08:00","level":"INFO","msg":"handler: started","stream_id":"z9le7cv9"}
-{"time":"2024-11-27T19:12:50.597441+08:00","level":"INFO","msg":"sender: started","stream_id":"z9le7cv9"}
-{"time":"2024-11-27T19:12:50.59742+08:00","level":"INFO","msg":"writer: Do: started","stream_id":"z9le7cv9"}
-{"time":"2024-11-27T19:12:50.632904+08:00","level":"ERROR","msg":"HTTP error","status":404,"method":"POST","url":"http://localhost:8080/graphql"}
-{"time":"2024-11-27T19:12:50.633031+08:00","level":"ERROR","msg":"sender: upsertRun:","error":"failed to upsert bucket: returned error 404 Not Found: {\"errors\":[{\"message\":\"entity your_username not found during upsertBucket\",\"path\":[\"upsertBucket\"]}],\"data\":{\"upsertBucket\":null}}"}

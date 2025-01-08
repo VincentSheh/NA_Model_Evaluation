@@ -1,7 +1,0 @@
-{"time":"2024-11-27T19:07:25.203009+08:00","level":"INFO","msg":"using version","core version":"0.18.7"}
-{"time":"2024-11-27T19:07:25.203043+08:00","level":"INFO","msg":"created symlink","path":"/Users/shehvincent/Documents/Edge_Computing/NA_Model_Evaluation/Simulation/wandb/run-20241127_190725-zyynrsm8/logs/debug-core.log"}
-{"time":"2024-11-27T19:07:25.315434+08:00","level":"INFO","msg":"created new stream","id":"zyynrsm8"}
-{"time":"2024-11-27T19:07:25.31549+08:00","level":"INFO","msg":"stream: started","id":"zyynrsm8"}
-{"time":"2024-11-27T19:07:25.315536+08:00","level":"INFO","msg":"handler: started","stream_id":"zyynrsm8"}
-{"time":"2024-11-27T19:07:25.315556+08:00","level":"INFO","msg":"writer: Do: started","stream_id":"zyynrsm8"}
-{"time":"2024-11-27T19:07:25.315548+08:00","level":"INFO","msg":"sender: started","stream_id":"zyynrsm8"}

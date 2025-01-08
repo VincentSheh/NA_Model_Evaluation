@@ -13,7 +13,8 @@ def logistic(x, impact_config={}, L_base=0.97, beta_0=-2.27, beta_CPU_base=4.880
         return L_base / (1 + np.exp(-(beta_0 + beta_CPU_base * x)))
 
     # Define exponential saturation adjustment for intensity effect
-    intensity_effect = 1 - np.exp(-impact_config["alpha"] * impact_config["new_intensity"])
+    #! intensity_effect = 1 - np.exp(-impact_config["alpha"] * impact_config["new_intensity"])
+    intensity_effect = impact_config["alpha"] * impact_config["new_intensity"]/2000
 
     # Adjust parameters based on intensity effect
     L = L_base * (1 + impact_config["L_k"] * intensity_effect)  # Decrease L with intensity effect
@@ -41,8 +42,6 @@ class EdgeArea:
         # self.vim.forward(self.server.cur_info)
         self.server.forward()
         self.ids.forward()
-    def reconfigure_resource(self, video_cpu):
-        pass #TODO: Reconfigure Resource Here
         
         
         
@@ -106,13 +105,25 @@ class VideoServer(object): # Edge Area Server
         self.current_cpu_usage = 0  # Current CPU usage
         self.active_streamers = []  # ! Use Priority Queue to sort the load
         self.active_attackers = []
+        # self.qoe_vs_n_user_params = {
+        #     1: [0.97, -2.2782716980482065, 4.8802368476587255],
+        #     2: [0.97, -3.8873078667967476, 5.175670954212056],
+        #     3: [0.97, -4.4959769724864636, 4.081147830542201],
+        #     4: [0.97, -3.3377765392197962, 2.5431386672697025],
+        #     5: [0.97, -4.186919060489949, 2.3893219975556157],
+        #     6: [0.97, -5.935630098896784, 2.56309746149014],
+        # }
         self.qoe_vs_n_user_params = {
-            1: [0.97, -2.2782716980482065, 4.8802368476587255],
-            2: [0.97, -3.8873078667967476, 5.175670954212056],
-            3: [0.97, -4.4959769724864636, 4.081147830542201],
-            4: [0.97, -3.3377765392197962, 2.5431386672697025],
-            5: [0.97, -4.186919060489949, 2.3893219975556157],
-            6: [0.97, -5.935630098896784, 2.56309746149014],
+            1:  [0.9991619042014769,-2.8026108493117943,5.668093271506809],
+            2:  [0.9999999996309884,-2.0961944923922555,1.998039343427015],
+            3:  [0.9999999999739316,-2.2265292326900163,2.002895418416976],
+            4:  [0.9965690849479469,-2.8152311397077043,2.004385398593321],
+            5:  [0.9945007296615602,-3.147645008537425,2.038873125719032],
+            6:  [0.9800000000000001,-2.717441897354403,1.5195963820348175],
+            7:  [0.9800000000000034,-2.6831785348682815,1.3106707068703483],
+            8:  [0.9800000000000001,-2.7938552902013924,1.2722296076571054],
+            9:  [0.9967234163504595,-3.19640794164371,1.3140589747660822],
+            10: [0.9854243346750624,-3.224343461342699,1.2811557634774904],
         }
         self.attack_config_list = []
         self.std_matrix = [ # [User] [CPU * 2]
