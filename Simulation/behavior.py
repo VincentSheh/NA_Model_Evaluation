@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
-
+NUM_USERS = 10
 def generate_attack_intensity(time_steps, baseline, fluctuation, spike_prob, spike_intensity, 
                                              persistence_coeffs, decay_factor, drop_prob, drop_intensity):
     # Initialize intensity array with the first three values set to baseline
@@ -40,7 +40,7 @@ def generate_attack_intensity(time_steps, baseline, fluctuation, spike_prob, spi
 
     return intensity
 
-def user_behavior_from_csv(streamer, run_for, plot=False):
+def user_behavior_from_csv(streamer, run_for, plot=False, num_streamers = NUM_USERS):
     if streamer == "biggo":
         order, seasonal_order = (2,0,1), (1, 0, 1, 24) #Biggo and YT
     elif streamer == "youtube":
@@ -63,7 +63,7 @@ def user_behavior_from_csv(streamer, run_for, plot=False):
         nsimulations=120, 
         # initial_state=sarima_model.predicted_state[:, -1], 
         initial_state=sarima_model.predicted_state[:, -1], 
-        repetitions= run_for//((120-10)*30) 
+        repetitions= max(1,run_for//((120-10)*30) )
     ).values    
     
     min_value = np.min(simulated_values)
@@ -71,7 +71,7 @@ def user_behavior_from_csv(streamer, run_for, plot=False):
     if min_value < 0: #! Not Needed?
         simulated_values -= min_value
     simulated_values = np.array(simulated_values)
-    simulated_values = simulated_values / np.max(simulated_values) * 10 + 1
+    simulated_values = simulated_values / np.max(simulated_values) * num_streamers + 1
     simulated_values = np.round(simulated_values)    
     simulated_values = np.clip(simulated_values, 0,10)
     

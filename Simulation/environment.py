@@ -11,7 +11,7 @@ from itertools import permutations
 
 
 # Attack Intensity Parameters
-baseline_intensity = 700
+BASELINE_INTENSITY = 2500 #1500 # Previously 700
 fluctuation_intensity = 60
 spike_prob = 0.0
 spike_intensity = 200
@@ -21,7 +21,7 @@ drop_prob = 0.00  # Probability of a sudden drop in intensity
 drop_intensity = 100  # Amount by which intensity drops if drop event occurs
 
 
-atk_states = ["NoAtk", "bonesi", "goldeneye", "hulk"]
+atk_states = ["NoAtk", "bonesi", "goldeneye", "hulk", "bonesi_x_ge"]
 # atk_states = ["NoAtk", "bonesi", "bonesi", "bonesi"]
 # atk_states = ["NoAtk", "hulk", "hulk", "hulk"]
 # atk_duration_means = [5, 3, 2, 4]  # mean duration for each state (Poisson distribution)
@@ -30,11 +30,40 @@ atk_states = ["NoAtk", "bonesi", "goldeneye", "hulk"]
 #                                     [0.1, 0.1, 0.7, 0.1],  # SYN Flood
 #                                     [0.1, 0.1, 0.2, 0.6]])  # HTTP Flood   
 
-atk_duration_means = np.array([10, 3, 6, 8])*30  # mean duration for each state (Poisson distribution)
+atk_duration_means = np.array([10, 3, 6, 8, 5])*30  # mean duration for each state (Poisson distribution)
+#Original
 atk_transition_matrix = np.array(  [[0.5, 0.2, 0.15, 0.15],  # No Attack
                                     [0.8, 0.2, 0.0, 0.0],  # DDoS
                                     [0.8, 0.0, 0.2, 0.0],  # SYN Flood
                                     [0.8, 0.0, 0.0, 0.2]])  # HTTP Flood   run_for = 10_000
+
+atk_transition_matrix = np.array(  [[0.25, 0.25, 0.25, 0.25],  # No Attack
+                                    [0.75, 0.25, 0.0, 0.0],  # DDoS
+                                    [0.75, 0.0, 0.25, 0.0],  # SYN Flood
+                                    [0.75, 0.0, 0.0, 0.25]])  # HTTP Flood   run_for = 10_000
+
+atk_transition_matrix = np.array([
+    [0.1, 0.225, 0.225, 0.225, 0.225],  # No Attack
+    [0.7, 0.3, 0.0, 0.0, 0.0],  # bonesi
+    [0.7, 0.0, 0.3, 0.0, 0.0],  # bonesi_x_ge
+    [0.7, 0.0, 0.0, 0.3, 0.0],  # goldeneye
+    [0.7, 0.0, 0.0, 0.0, 0.3],  # hulk
+])
+# atk_transition_matrix = np.array([
+#     [0.2, 0.2, 0.2, 0.2, 0.2],  # No Attack
+#     [0.5, 0.5, 0.0, 0.0, 0.0],  # bonesi
+#     [0.5, 0.0, 0.5, 0.0, 0.0],  # bonesi_x_ge
+#     [0.5, 0.0, 0.0, 0.5, 0.0],  # goldeneye
+#     [0.5, 0.0, 0.0, 0.0, 0.5],  # hulk
+# ])
+# atk_transition_matrix = np.array([
+#     [0.2, 0.2, 0.2, 0.2, 0.2],  # No Attack
+#     [0.2, 0.8, 0.0, 0.0, 0.0],  # bonesi
+#     [0.2, 0.0, 0.8, 0.0, 0.0],  # bonesi_x_ge
+#     [0.2, 0.0, 0.0, 0.8, 0.0],  # goldeneye
+#     [0.2, 0.0, 0.0, 0.0, 0.8],  # hulk
+# ])
+
 
 # stream_states = [0, 1] #0: Idle, #1: Streaming
 # stream_duration_means = [20, 30]  # mean duration for each state (Poisson distribution)
@@ -60,7 +89,7 @@ class Environment:
         self.streamer_type = ["biggo", "youtube", "steamtv"]
 
         
-    def initialize_agent(self, num_area, num_streamers, num_attackers):
+    def initialize_agent(self, num_area, num_streamers, num_attackers, baseline_intensity = BASELINE_INTENSITY):
         # num_area=3
         num_streamers = [num_streamers]*num_area #Depending on num_server
         num_attackers = [1]*num_area #Depending on num_attackers
@@ -71,7 +100,7 @@ class Environment:
             streamers = []
             attackers = []
             aggregate_state_sequence = np.zeros(self.run_for)  
-            active_streamers = user_behavior_from_csv(self.streamer_type[i], self.run_for)
+            active_streamers = user_behavior_from_csv(self.streamer_type[i], self.run_for, num_streamers = num_streamers)
             for j in range(num_streamers[i]): #Initialize streamers
                 # hsmm_states = generate_hsmm(self.run_for, stream_states, stream_duration_means, stream_transition_matrix)
                 # streamers.append(Streamer(j, hsmm_states))     
@@ -93,7 +122,7 @@ class Environment:
                         persistence_coeffs, decay_factor, drop_prob, drop_intensity
                 )   
                 
-                attackers.append(Attacker(j, intensity_sequence, atk_hsmm_states))
+                attackers.append(Attacker(j, intensity_sequence, atk_hsmm_states, edge_area=i))
             # Define the Streamer/Attacker-Server Relation on Environment for Task Offloading
             self.area_dict[i] = {
                                           "area": EdgeArea(video_cpu),
@@ -139,8 +168,8 @@ class Environment:
                     
         #? Update Agent
         #TODO: Move to Orchestrator Class
-        # global_states = np.zeros((len(self.area_dict), 4)) 
-        global_states = np.zeros((len(self.area_dict), 7)) 
+        global_states = np.zeros((len(self.area_dict), 4)) 
+        # global_states = np.zeros((len(self.area_dict), 7)) 
         tb_log = {} # {Edge_Area1: {cpu_allocation, total_user (with offloaded), total_defense}}
         #Variables to for Task Offloading
         streamer_counts = []
@@ -156,15 +185,16 @@ class Environment:
             
             for attack in edge_area['attackers']: #Initiate the Attack Task
                 attack.forward() #IDS is Called Here     
-                atk_state = attack.atk_type
+                atk_config = attack.atk_config
                 atk_intensity = attack.intensity
                 if atk_intensity > 0:                    
-                    atk_intensity = atk_intensity * ids.accuracy[atk_state.value["name"]]
+                    atk_intensity = atk_intensity * ids.accuracy[attack.state] #[attack.value["name"]]
                 remaining_atks = max(0,atk_intensity - ids.cur_quota) #Current Quota before Utilized by detection
                 #* For Logging To Global States
-                atk_L = atk_state.value["L_k"]
-                atk_beta_0 = atk_state.value["beta_0_k"]
-                atk_beta_CPU = atk_state.value["beta_CPU_k"]
+                atk_L = atk_config["L_k"]
+                atk_beta_0 = atk_config["beta_0_k"]
+                atk_beta_CPU = atk_config["beta_CPU_k"]
+                
                     
                 #! Moved from calculated_qoe()    
                 attack.start(server) #IDS is Called Here
@@ -178,9 +208,9 @@ class Environment:
                     streamer.start_stream(server)               
             global_states[i][0] = active_streamer / 10
             global_states[i][1] = atk_intensity / 2000 #! Max Intensity shouldn't be a constant
-            global_states[i][2] = atk_L
-            global_states[i][3] = atk_beta_0
-            global_states[i][4] = atk_beta_CPU
+            # global_states[i][2] = atk_L
+            # global_states[i][3] = atk_beta_0
+            # global_states[i][4] = atk_beta_CPU
             streamer_counts.append(active_streamer)
             cpu_list.append(server.cpu_allocated)
             # remaining_quotas.append((ids.cur_quota, ids.accuracy)) #Get the Remaining Defense Quota of each edge area
@@ -230,26 +260,24 @@ class Environment:
             # Check termination condition
             if np.all(defense_allocation >= 0):
                 break
-            
-        total_allocation=0
-        new_atk_list = []
-        # print("After: ", a_prime, defense_allocation)
-        # for cur_quota, accuracy in self.area_dict.items():
-        #     ids = edge_area['area'].ids
+                    
         for i, ids_info in enumerate(remaining_quotas): #For different ids
-            cur_quota, accuracy = ids_info
+            cur_quota, accuracy = ids_info #Current IDS Defense Quota
             # print("Area:", i)
             for idx in idx_to_reduce: #For different Atks
                 if cur_quota <= 0:
                     break
-                allocation = min(cur_quota, defense_allocation[idx])
+                server = self.area_dict[idx]['area'].server
+                atk_config = server.attack_config_list[0]     
+                allocation = min(min(cur_quota, defense_allocation[idx]), atk_config["new_intensity"])
                 cur_quota -= allocation
                 defense_allocation[idx] -= allocation
-                total_allocation+=allocation
-                server = self.area_dict[idx]['area'].server
-                atk_config = server.attack_config_list[0]
+                # total_allocation+=allocation
+
                 atk_config["new_intensity"] -= allocation*accuracy[atk_config["name"]]
-            new_atk_list.append(server.attack_config_list[0])
+                if atk_config["new_intensity"] < 0: 
+                    print("WARNING!: Over allocation of Defense Resource", atk_config["new_intensity"])                       
+            # new_atk_list.append(server.attack_config_list[0])
         # print(total_allocation, defense_allocation)
         # print(new_atk_list)
         #TODO: Method 2 - Offload to nearest Edge Area
@@ -266,7 +294,7 @@ class Environment:
             tb_log[f"Edge_Area_{i}/final_atk_intensity"] = atk_config["new_intensity"]
             # break
         
-        return tb_log, global_states, atk_state
+        return tb_log, global_states, atk_config
 
     def update_timestep(self):
         self.start_new_timestep()

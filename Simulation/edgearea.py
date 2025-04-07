@@ -53,7 +53,7 @@ class IDS(object):
         #! self.processing_speed
         self.processing_speed = lambda x: 300*x - 100  # Minimum CPU = 0.5 #TODO: Add Noise and Accelerate for Different Types 
         # self.accuracy = {"bonesi": 0.95, "goldeneye": 0.8, "hulk": 1.0}  # Accuracy for different attack variants
-        self.accuracy = {"bonesi": 1.0, "goldeneye": 1.0, "hulk": 1.0}  # Accuracy for different attack variants
+        self.accuracy = {"bonesi": 1.0, "bonesi_x_ge":1.0, "goldeneye": 1.0, "hulk": 1.0 }  # Accuracy for different attack variants
         self.cur_quota = self.processing_speed(self.cpu_allocated)
 
     def detect(self, attack):
