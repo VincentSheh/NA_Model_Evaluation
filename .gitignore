@@ -13,3 +13,5 @@ pycache/
 github_token.txt
 /Simulation/tb_logs/
 /Simulation/wandb/
+/wandb
+*.log

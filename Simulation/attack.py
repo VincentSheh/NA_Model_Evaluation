@@ -52,7 +52,7 @@ class Attacker:
         self.time_elapsed = 0  # Track how long the attack has been active
         self.state = hsmm_state[self.time_elapsed]  # Initial state
         self.edge_area = edge_area
-        self.atk_config = attack_type_dict[self.state].value[edge_area].copy()
+        self.atk_config = attack_type_dict[self.state].value[edge_area%3].copy()
         self.intensity = 0  # e.g., requests per second
 
     def update_intensity(self):
@@ -80,7 +80,7 @@ class Attacker:
         self.time_elapsed += 1
         if self.time_elapsed < len(self.hsmm_state):
             self.state = self.hsmm_state[self.time_elapsed]
-            self.atk_config = attack_type_dict[self.state].value[self.edge_area].copy()
+            self.atk_config = attack_type_dict[self.state].value[self.edge_area%3].copy()
             self.update_intensity()
         else:
             self.state = None  # Indicates that the attack sequence has ended

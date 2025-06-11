@@ -63,7 +63,8 @@ def user_behavior_from_csv(streamer, run_for, plot=False, num_streamers = NUM_US
         nsimulations=120, 
         # initial_state=sarima_model.predicted_state[:, -1], 
         initial_state=sarima_model.predicted_state[:, -1], 
-        repetitions= max(1,run_for//((120-10)*30) )
+        # repetitions= max(1,run_for//((120-10)*30) )
+        repetitions= 5
     ).values    
     
     min_value = np.min(simulated_values)

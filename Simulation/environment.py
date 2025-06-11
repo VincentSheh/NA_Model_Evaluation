@@ -86,7 +86,7 @@ class Environment:
         self.cpu_allocated = cpu_capacity
         self.current_timestep = 0  # Initialize timestep counter
         self.run_for = run_for  # Total number of timesteps to simulate
-        self.streamer_type = ["biggo", "youtube", "steamtv"]
+        self.streamer_type = ["biggo", "youtube", "steamtv", "biggo", "youtube",] #If want to add make sure to remove %3
 
         
     def initialize_agent(self, num_area, num_streamers, num_attackers, baseline_intensity = BASELINE_INTENSITY):
